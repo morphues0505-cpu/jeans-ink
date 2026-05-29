@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalog — JEANS·INK</title>
+  <link rel="stylesheet" href="css/style.css?v=3">
+  <style>
+    .filter-bar {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .filter-btn {
+      padding: 8px 18px;
+      border: 1px solid var(--border-2);
+      border-radius: 99px;
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--text-muted);
+      background: transparent;
+      transition: all 0.2s; cursor: pointer;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .patch-grid { gap: 20px; }
+
+    .patch-preview {
+      aspect-ratio: 3/4;
+      background: #0F0F0F;
+      overflow: hidden;
+    }
+    .patch-preview img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+      filter: grayscale(20%) contrast(1.05);
+    }
+    .patch-card:hover .patch-preview img {
+      transform: scale(1.06);
+      filter: grayscale(0%) contrast(1.1);
+    }
+
+    .size-selector {
+      display: flex; gap: 8px; margin-bottom: 16px;
+    }
+    .size-btn {
+      padding: 5px 12px;
+      border: 1px solid var(--border-2);
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem; color: var(--text-muted);
+      background: transparent; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .size-btn:hover, .size-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .sold-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .patch-card.sold-out .sold-overlay { opacity: 1; }
+    .sold-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem; font-weight: 700;
+      letter-spacing: 0.15em; color: var(--text-muted);
+      border: 1px solid var(--text-muted);
+      padding: 8px 16px;
+    }
+
+    .catalog-hero {
+      background: var(--bg-2);
+      border-bottom: 1px solid var(--border);
+      padding: calc(var(--nav-h) + 48px) 0 48px;
+    }
+    .catalog-hero-inner {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .drop-info {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px 24px;
+      display: flex; gap: 32px;
+      margin-bottom: 40px; flex-wrap: wrap;
+    }
+    .drop-stat { }
+    .drop-stat-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.4rem; font-weight: 700;
+      color: var(--accent); display: block;
+    }
+    .drop-stat-label {
+      font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-muted);
+    }
+
+    /* Modal detail */
+    .modal-detail-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media(max-width:600px){ .modal-detail-grid{grid-template-columns:1fr;} }
+    .modal-detail-img {
+      border-radius: 8px; overflow: hidden;
+      aspect-ratio: 3/4; background: #0f0f0f;
+    }
+    .modal-detail-img img {
+      width:100%; height:100%; object-fit: cover;
+      filter: grayscale(15%) contrast(1.05);
+    }
+    .modal-detail-info { display: flex; flex-direction: column; }
+    .modal-price-row {
+      display: flex; align-items: baseline; gap: 12px;
+      margin: 16px 0;
+    }
+    .modal-price-main {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.4rem; font-weight: 700;
+    }
+    .modal-price-alt {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem; color: var(--text-muted);
+    }
+    .modal-actions { margin-top: auto; display: flex; gap: 12px; flex-wrap: wrap; }
+    .modal-stock-bar { margin: 16px 0 8px; }
+    .modal-stock-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.75rem; color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo mono">JEANS<span>·</span>INK</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="catalog.html">Catalog</a></li>
+      <li><a href="how-it-works.html">Process</a></li>
+      <li><a href="track.html">Track</a></li>
+      <li><a href="order.html" class="nav-cta">Order Now</a></li>
+    </ul>
+    <button class="nav-burger" id="navBurger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="index.html">Home</a>
+  <a href="catalog.html">Catalog</a>
+  <a href="how-it-works.html">Process</a>
+  <a href="track.html">Track Order</a>
+  <a href="order.html">Order Now →</a>
+</div>
+
+<!-- CATALOG HERO -->
+<div class="catalog-hero">
+  <div class="container">
+    <div class="catalog-hero-inner">
+      <div>
+        <span class="tag mono" style="display:block;margin-bottom:12px">— Drop 01 / 2026</span>
+        <h1 style="font-size:clamp(2rem,5vw,3.5rem)">All Designs</h1>
+        <p style="color:var(--text-muted);margin-top:12px;max-width:460px">
+          8 patterns. 22 pieces each. Hand-applied to your jeans. Each numbered — never restocked.
+        </p>
+      </div>
+      <div class="drop-info">
+        <div class="drop-stat">
+          <span class="drop-stat-num" id="totalAvail">176</span>
+          <span class="drop-stat-label">Total pieces</span>
+        </div>
+        <div class="drop-stat">
+          <span class="drop-stat-num" id="totalSold">0</span>
+          <span class="drop-stat-label">Sold</span>
+        </div>
+        <div class="drop-stat">
+          <span class="drop-stat-num">8</span>
+          <span class="drop-stat-label">Designs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CATALOG BODY -->
+<section class="section">
+  <div class="container">
+
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="Mongolian">Mongolian</button>
+      <button class="filter-btn" data-filter="Tribal">Tribal</button>
+      <button class="filter-btn" data-filter="Abstract">Abstract</button>
+      <button class="filter-btn" data-filter="Geometric">Geometric</button>
+      <button class="filter-btn" data-filter="Minimal">Minimal</button>
+    </div>
+
+    <div class="patch-grid" id="catalogGrid"></div>
+
+  </div>
+</section>
+
+<!-- PATCH DETAIL MODAL -->
+<div class="modal-overlay" id="patchModal">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div>
+        <span class="patch-code" id="modalCode" style="font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--accent)"></span>
+        <h3 id="modalName" style="margin-top:4px"></h3>
+      </div>
+      <button class="modal-close" onclick="closeModal('patchModal')">✕</button>
+    </div>
+    <div class="modal-detail-grid">
+      <div class="modal-detail-img">
+        <img id="modalImg" src="" alt="">
+      </div>
+      <div class="modal-detail-info">
+        <span class="badge badge-gold" id="modalCategory" style="width:fit-content"></span>
+        <div class="modal-price-row">
+          <span class="modal-price-main">40,000₮</span>
+          <span class="modal-price-alt">A3: 100,000₮</span>
+        </div>
+        <div class="modal-stock-bar">
+          <div class="modal-stock-label">
+            <span>Availability</span>
+            <span id="modalStockText"></span>
+          </div>
+          <div class="stock-bar"><div class="stock-fill" id="modalStockFill" style="width:100%"></div></div>
+        </div>
+        <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.7;margin-top:8px">
+          Heat-press технологиор хийгдсэн. Denim-д зориулан тохируулсан.
+          30°C-д урвуу талаас угаахад тэсвэртэй.
+        </p>
+        <div style="margin-top:16px;padding:14px;background:var(--bg-3);border-radius:6px;border:1px solid var(--border)">
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px" class="mono">Хэмжээ</p>
+          <p style="font-size:0.85rem">A4 (21×29.7cm) · A3 (29.7×42cm)</p>
+        </div>
+        <div class="modal-actions">
+          <a href="order.html" class="btn btn-primary" style="flex:1;justify-content:center">
+            Order This Design
+          </a>
+          <a href="how-it-works.html" class="btn btn-ghost">How it works</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="nav-logo mono">JEANS<span style="color:var(--accent)">·</span>INK</span>
+        <p>Premium hand-applied jeans patches. Limited drops. Ulaanbaatar made.</p>
+      </div>
+      <div>
+        <p class="tag mono" style="margin-bottom:16px">Navigation</p>
+        <div class="footer-links">
+          <a href="catalog.html">Catalog</a>
+          <a href="how-it-works.html">How It Works</a>
+          <a href="order.html">Order</a>
+          <a href="track.html">Track Order</a>
+        </div>
+      </div>
+      <div>
+        <p class="tag mono" style="margin-bottom:16px">Social</p>
+        <div class="footer-social">
+          <a href="#" title="Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="#" title="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 JEANS·INK. All rights reserved.</p>
+      <p class="mono" style="font-size:0.7rem;color:var(--text-dim)">DROP 01 / ULAANBAATAR</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+const CATALOG = [
+  { id:'001', name:'ALTAN URAG',    category:'Mongolian', total:22, sold:0, img:'assets/photos/CLON (5).jpg' },
+  { id:'002', name:'VOID GEOMETRY', category:'Geometric', total:22, sold:0, img:'assets/photos/CLON (1).png' },
+  { id:'003', name:'TRIBAL MARK',   category:'Tribal',    total:22, sold:0, img:'assets/photos/CLON (40).jpg' },
+  { id:'004', name:'URBAN GLITCH',  category:'Abstract',  total:22, sold:0, img:'assets/photos/CLON (38).jpg' },
+  { id:'005', name:'NIGHT SUTRA',   category:'Minimal',   total:22, sold:0, img:'assets/photos/CLON (35).jpg' },
+  { id:'006', name:'STEPPE LINE',   category:'Mongolian', total:22, sold:0, img:'assets/photos/CLON (47).jpg' },
+  { id:'007', name:'RAW CIRCUIT',   category:'Geometric', total:22, sold:0, img:'assets/photos/CLON (7).jpg' },
+  { id:'008', name:'GHOST KNOT',    category:'Abstract',  total:22, sold:0, img:'assets/photos/CLON (4).png' },
+];
+
+function renderCatalog(filter = 'all') {
+  const grid = document.getElementById('catalogGrid');
+  const items = filter === 'all' ? CATALOG : CATALOG.filter(p => p.category === filter);
+  const avail = CATALOG.reduce((a, p) => a + (p.total - p.sold), 0);
+  const sold  = CATALOG.reduce((a, p) => a + p.sold, 0);
+  document.getElementById('totalAvail').textContent = avail;
+  document.getElementById('totalSold').textContent  = sold;
+
+  grid.innerHTML = items.map(p => {
+    const remaining = p.total - p.sold;
+    const pct = Math.round((remaining / p.total) * 100);
+    const isSold = remaining === 0;
+    return `
+    <div class="patch-card${isSold?' sold-out':''} reveal" onclick="openDetail('${p.id}')">
+      <div class="patch-preview">
+        <img src="${p.img}" alt="${p.name}" loading="lazy">
+        <div class="patch-preview-label">
+          <span class="badge badge-gold">#${p.id}</span>
+        </div>
+        <div class="patch-preview-stock">
+          ${isSold
+            ? '<span class="badge badge-sold">Sold Out</span>'
+            : `<span class="badge badge-dark mono">${remaining}/22</span>`}
+        </div>
+        <div class="sold-overlay"><span class="sold-text">SOLD OUT</span></div>
+      </div>
+      <div class="patch-info">
+        <div class="patch-code">#${p.id}</div>
+        <div class="patch-name">${p.name}</div>
+        <div class="patch-category">${p.category}</div>
+        <div class="stock-bar" style="margin-bottom:16px">
+          <div class="stock-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="patch-footer">
+          <div class="patch-price">
+            40,000₮
+            <span>A4 · A3: 100,000₮</span>
+          </div>
+          <span class="btn btn-outline" style="padding:8px 14px;font-size:0.75rem">
+            ${isSold ? 'Sold Out' : 'Details →'}
+          </span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.reveal').forEach(el => {
+    setTimeout(() => el.classList.add('visible'), 50);
+  });
+}
+
+function openDetail(id) {
+  const p = CATALOG.find(x => x.id === id);
+  if (!p) return;
+  const remaining = p.total - p.sold;
+  const pct = Math.round((remaining / p.total) * 100);
+  document.getElementById('modalCode').textContent = `#${p.id}`;
+  document.getElementById('modalName').textContent = p.name;
+  document.getElementById('modalCategory').textContent = p.category;
+  document.getElementById('modalImg').src = p.img;
+  document.getElementById('modalImg').alt = p.name;
+  document.getElementById('modalStockText').textContent = `${remaining} / ${p.total} remaining`;
+  document.getElementById('modalStockFill').style.width = pct + '%';
+  openModal('patchModal');
+}
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCatalog(btn.dataset.filter);
+  });
+});
+
+renderCatalog();
+</script>
+</body>
+</html>

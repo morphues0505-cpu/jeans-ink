@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order — JEANS·INK</title>
+  <link rel="stylesheet" href="css/style.css?v=3">
+  <style>
+    .track-hero {
+      background: var(--bg-2);
+      border-bottom: 1px solid var(--border);
+      padding: calc(var(--nav-h) + 48px) 0 48px;
+    }
+    .track-center {
+      max-width: 560px; margin: 0 auto;
+    }
+
+    .track-card {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 36px;
+    }
+
+    .status-timeline {
+      position: relative;
+      display: flex; flex-direction: column; gap: 0;
+      margin-top: 28px;
+    }
+    .status-step {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding-bottom: 28px; position: relative;
+    }
+    .status-step::before {
+      content: '';
+      position: absolute;
+      left: 15px; top: 32px; bottom: 0;
+      width: 2px; background: var(--border);
+    }
+    .status-step:last-child::before { display: none; }
+    .status-step:last-child { padding-bottom: 0; }
+
+    .status-dot {
+      width: 32px; height: 32px; min-width: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+      font-size: 0.75rem;
+      transition: all 0.3s;
+    }
+    .status-step.done .status-dot {
+      background: rgba(0,200,100,0.15);
+      border-color: #00C864;
+      color: #00C864;
+    }
+    .status-step.active .status-dot {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(201,168,76,0.1);
+    }
+    .status-step.done .status-step-line,
+    .status-step.active .status-step-line {
+      background: var(--accent);
+    }
+
+    .status-info { padding-top: 4px; flex: 1; }
+    .status-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+    .status-title.muted { color: var(--text-muted); font-weight: 400; }
+    .status-date { font-size: 0.75rem; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+
+    .order-summary {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px;
+      margin-bottom: 24px;
+    }
+    .summary-row {
+      display: flex; justify-content: space-between;
+      align-items: center; padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { color: var(--text-muted); }
+    .summary-value { font-family: 'Space Mono', monospace; font-weight: 600; }
+
+    /* Demo mode notice */
+    .demo-notice {
+      background: var(--accent-dim);
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 6px; padding: 12px 16px;
+      font-size: 0.8rem; color: var(--text-muted);
+      margin-bottom: 24px;
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo mono">JEANS<span>·</span>INK</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="catalog.html">Catalog</a></li>
+      <li><a href="how-it-works.html">Process</a></li>
+      <li><a href="track.html">Track</a></li>
+      <li><a href="order.html" class="nav-cta">Order Now</a></li>
+    </ul>
+    <button class="nav-burger" id="navBurger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="index.html">Home</a>
+  <a href="catalog.html">Catalog</a>
+  <a href="how-it-works.html">Process</a>
+  <a href="track.html">Track Order</a>
+  <a href="order.html">Order Now →</a>
+</div>
+
+<!-- HERO -->
+<div class="track-hero">
+  <div class="container">
+    <span class="tag mono">— Захиалга шалгах</span>
+    <h1 style="font-size:clamp(2rem,5vw,3.5rem);margin-top:12px">Track Your Order</h1>
+    <p style="color:var(--text-muted);margin-top:14px;max-width:480px;line-height:1.7">
+      Захиалгын дугаараа оруулж статусаа шалгаарай.
+      Дугаарыг захиалгын баталгаажилтын DM-с олно уу.
+    </p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="track-center">
+
+      <!-- Search form -->
+      <div class="track-card reveal" style="margin-bottom:24px">
+        <p class="tag mono" style="display:block;margin-bottom:16px">— Захиалгын дугаар</p>
+        <div class="track-input-group">
+          <input
+            class="track-input"
+            id="trackInput"
+            type="text"
+            placeholder="Жнь: 001/22 эсвэл #003"
+            maxlength="10"
+          >
+          <button class="btn btn-primary" onclick="trackOrder()" id="trackBtn">
+            Шалгах
+          </button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--text-dim);margin-top:10px">
+          Жишээ: <span class="mono" style="color:var(--text-muted)">001</span> ·
+          <span class="mono" style="color:var(--text-muted)">01/22</span> ·
+          <span class="mono" style="color:var(--text-muted)">#001</span>
+        </p>
+      </div>
+
+      <!-- Demo notice -->
+      <div class="demo-notice reveal">
+        <span>💡</span>
+        <span>
+          <strong style="color:var(--text)">Demo горим.</strong>
+          Жинхэнэ захиалга шалгахыг тун удахгүй идэвхжүүлнэ.
+          Одоохондоо статусаа Facebook DM-р асууна уу.
+        </span>
+      </div>
+
+      <!-- Result (hidden initially) -->
+      <div id="trackResult" class="track-card reveal" style="display:none">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <p class="tag mono" style="margin-bottom:4px">Захиалгын дугаар</p>
+            <h3 id="resultOrderNum" style="color:var(--accent);font-family:'Space Mono',monospace"></h3>
+          </div>
+          <span id="resultBadge" class="badge badge-gold"></span>
+        </div>
+
+        <div class="order-summary" id="resultSummary"></div>
+
+        <div class="status-timeline" id="resultTimeline"></div>
+
+        <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);text-align:center">
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">
+            Нэмэлт мэдээлэл авахыг хүсвэл:
+          </p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <a data-social="facebook" class="btn btn-outline" style="font-size:0.8rem;padding:10px 18px">Facebook DM</a>
+            <a data-social="instagram" href="order.html" class="btn btn-ghost" style="font-size:0.8rem;padding:10px 18px">Instagram DM</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Not found -->
+      <div id="trackNotFound" class="track-card" style="display:none;text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:16px;opacity:0.3">🔍</div>
+        <h3 style="margin-bottom:10px">Захиалга олдсонгүй</h3>
+        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:24px;line-height:1.6">
+          <span id="notFoundNum" class="mono" style="color:var(--accent)"></span> дугаартай захиалга олдсонгүй.<br>
+          Дугаараа шалгаад дахин оролдоно уу.
+        </p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <a href="order.html" class="btn btn-primary">Шинэ захиалга</a>
+          <a href="catalog.html" class="btn btn-ghost">Catalog харах</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="nav-logo mono">JEANS<span style="color:var(--accent)">·</span>INK</span>
+        <p>Premium hand-applied jeans patches. Limited drops. Ulaanbaatar made.</p>
+      </div>
+      <div>
+        <p class="tag mono" style="margin-bottom:16px">Navigation</p>
+        <div class="footer-links">
+          <a href="catalog.html">Catalog</a>
+          <a href="how-it-works.html">How It Works</a>
+          <a href="order.html">Order</a>
+          <a href="track.html">Track Order</a>
+        </div>
+      </div>
+      <div>
+        <p class="tag mono" style="margin-bottom:16px">Social</p>
+        <div class="footer-social">
+          <a href="#" title="Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="#" title="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 JEANS·INK. All rights reserved.</p>
+      <p class="mono" style="font-size:0.7rem;color:var(--text-dim)">DROP 01 / ULAANBAATAR</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+// Demo data — захиалга нэмэхдээ энд оруулна
+const DEMO_ORDERS = {
+  '001': {
+    num: '001/22', design: '#002 VOID GEOMETRY', size: 'A4',
+    price: '40,000₮', advance: '20,000₮', remaining: '20,000₮',
+    status: 2,
+    date: '2026-05-29',
+    phone: '99xx-xxxx',
+  },
+};
+
+const STATUSES = [
+  { label: 'Захиалга хүлээн авсан',   icon: '✓' },
+  { label: 'Урьдчилгаа баталгаажсан', icon: '✓' },
+  { label: 'Үйлдвэрлэлд',             icon: '⚙' },
+  { label: 'Хүргэлтэнд бэлэн',        icon: '📦' },
+  { label: 'Хүргэгдсэн',              icon: '🎉' },
+];
+
+function trackOrder() {
+  const raw = document.getElementById('trackInput').value.trim();
+  const key = raw.replace(/[^0-9]/g, '').padStart(3, '0').slice(0, 3);
+
+  document.getElementById('trackResult').style.display   = 'none';
+  document.getElementById('trackNotFound').style.display = 'none';
+
+  const order = DEMO_ORDERS[key];
+  if (!order) {
+    document.getElementById('notFoundNum').textContent = raw || '???';
+    document.getElementById('trackNotFound').style.display = 'block';
+    return;
+  }
+
+  // Fill result
+  document.getElementById('resultOrderNum').textContent = order.num;
+  document.getElementById('resultBadge').textContent     = STATUSES[order.status].label;
+
+  document.getElementById('resultSummary').innerHTML = `
+    <div class="summary-row"><span class="summary-label">Хээ</span><span class="summary-value">${order.design}</span></div>
+    <div class="summary-row"><span class="summary-label">Хэмжээ</span><span class="summary-value">${order.size}</span></div>
+    <div class="summary-row"><span class="summary-label">Нийт үнэ</span><span class="summary-value">${order.price}</span></div>
+    <div class="summary-row"><span class="summary-label">Урьдчилгаа</span><span class="summary-value" style="color:#00C864">${order.advance} ✓</span></div>
+    <div class="summary-row"><span class="summary-label">Үлдэгдэл</span><span class="summary-value" style="color:var(--accent)">${order.remaining}</span></div>
+  `;
+
+  document.getElementById('resultTimeline').innerHTML = STATUSES.map((s, i) => `
+    <div class="status-step ${i < order.status ? 'done' : i === order.status ? 'active' : ''}">
+      <div class="status-dot">${i <= order.status ? s.icon : ''}</div>
+      <div class="status-info">
+        <div class="status-title ${i > order.status ? 'muted' : ''}">${s.label}</div>
+        ${i < order.status ? `<div class="status-date">${order.date}</div>` : ''}
+        ${i === order.status ? `<div class="status-date" style="color:var(--accent)">Одоо ● энэ үе шатанд</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('trackResult').style.display = 'block';
+}
+
+document.getElementById('trackInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') trackOrder();
+});
+</script>
+</body>
+</html>
