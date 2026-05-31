@@ -75,13 +75,31 @@
       display: flex; align-items: center; justify-content: space-between;
       cursor: pointer; font-weight: 500; font-size: 1rem;
     }
-    .faq-q span { color: var(--accent); font-size: 1.2rem; transition: transform 0.3s; }
-    .faq-a {
-      display: none; margin-top: 14px;
-      font-size: 0.9rem; color: var(--text-muted); line-height: 1.7;
+    .faq-q span {
+      color: var(--accent); font-size: 1.2rem; display: inline-block;
+      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
     }
-    .faq-item.open .faq-a { display: block; }
-    .faq-item.open .faq-q span { transform: rotate(45deg); }
+    .faq-q:hover span { transform: scale(1.18); }
+    .faq-a {
+      overflow: hidden; max-height: 0; opacity: 0;
+      margin-top: 0; transform: translateY(-6px) scale(.97);
+      font-size: 0.9rem; color: var(--text-muted); line-height: 1.7;
+      transition: max-height .4s cubic-bezier(.22,1,.36,1),
+                  opacity .3s ease,
+                  transform .42s cubic-bezier(.34,1.56,.64,1),
+                  margin-top .3s ease;
+    }
+    .faq-item.open .faq-a {
+      max-height: 320px; opacity: 1; margin-top: 14px;
+      transform: translateY(0) scale(1);
+      animation: faqPop 0.45s cubic-bezier(.34,1.56,.64,1);
+    }
+    .faq-item.open .faq-q span { transform: rotate(45deg) scale(1.15); }
+    @keyframes faqPop {
+      0%   { transform: translateY(-6px) scale(.97); }
+      55%  { transform: translateY(0) scale(1.02); }
+      100% { transform: translateY(0) scale(1); }
+    }
   </style>
 </head>
 <body class="theme-dark">

@@ -290,5 +290,11 @@ document.getElementById('cfCopy').addEventListener('click', async () => {
   let sel = [];
   try { sel = JSON.parse(localStorage.getItem('ji_patterns') || '[]'); } catch (e) {}
   localStorage.removeItem('ji_patterns');
-  [...sel, ...DEFAULTS].forEach(addToTray);   // carried-from-catalog first, then defaults
+  // 1) tray-д бүгдийг нэмнэ (сонгосон нь эхэнд)
+  [...sel, ...DEFAULTS].forEach(addToTray);
+  // 2) catalog-аас сонгож ирсэн наалтуудыг jeans-ний урд тал дээр шууд байрлуулна
+  if (sel.length) {
+    setActiveSide('front');
+    sel.forEach((src, i) => addSticker(src, 'front', i));
+  }
 })();
