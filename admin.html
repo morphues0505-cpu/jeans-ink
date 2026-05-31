@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Pattern Prep | JEANS·INK</title>
+  <link rel="stylesheet" href="css/style.css?v=10">
+  <style>
+    .ad-wrap { padding-top: calc(var(--nav-h) + 40px); padding-bottom: 80px; max-width: 760px; }
+    .ad-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 22px; }
+    .ad-drop {
+      border: 2px dashed var(--border-2); border-radius: 10px;
+      padding: 40px 24px; text-align: center; cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .ad-drop:hover { border-color: var(--accent); background: var(--accent-dim); }
+    .ad-drop svg { width: 38px; height: 38px; color: var(--text-muted); margin-bottom: 12px; }
+    .ad-drop p { font-family: 'Montserrat',sans-serif; font-size: .85rem; color: var(--text-muted); }
+    .ad-drop input { display: none; }
+    .ad-status { font-family:'Montserrat',sans-serif; font-size:.8rem; color: var(--accent); margin-top:14px; min-height:1.2em; }
+    .ad-bar { height:4px; background:var(--border); margin-top:10px; border-radius:99px; overflow:hidden; display:none; }
+    .ad-bar.show { display:block; }
+    .ad-bar i { display:block; height:100%; width:0; background:var(--accent); transition:width .25s; }
+    /* checkerboard preview to show transparency */
+    .ad-preview {
+      margin-top:20px; border-radius:10px; overflow:hidden; display:none;
+      background-image:
+        linear-gradient(45deg,#2a2a2a 25%,transparent 25%),
+        linear-gradient(-45deg,#2a2a2a 25%,transparent 25%),
+        linear-gradient(45deg,transparent 75%,#2a2a2a 75%),
+        linear-gradient(-45deg,transparent 75%,#2a2a2a 75%);
+      background-size:22px 22px; background-position:0 0,0 11px,11px -11px,-11px 0;
+      background-color:#1a1a1a;
+      min-height:280px; display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .ad-preview.show { display:flex; }
+    .ad-preview img { max-width:100%; max-height:420px; object-fit:contain; }
+    .ad-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:18px; }
+    .ad-input {
+      background: var(--bg); border:1px solid var(--border-2); border-radius:6px;
+      padding:12px 14px; color:var(--text); font-family:'Montserrat',sans-serif; font-size:.85rem;
+    }
+    .ad-note { font-family:'Montserrat',sans-serif; font-size:.78rem; color:var(--text-muted); line-height:1.7; }
+    .ad-note b { color: var(--text); }
+    .ad-step { display:flex; gap:12px; margin-bottom:12px; }
+    .ad-step-n { width:24px;height:24px;min-width:24px;border-radius:50%;background:var(--accent);color:#0D0D0D;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.72rem;font-family:'Montserrat',sans-serif; }
+  </style>
+</head>
+<body class="theme-dark">
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo mono"><img src="assets/logo-nav.png" alt="JEANS·INK" style="margin-right:9px">JEANS<span>·</span>INK</a>
+    <span class="tag mono">— Admin · Pattern Prep</span>
+  </div>
+</nav>
+
+<div class="container ad-wrap">
+  <span class="tag mono">— Admin</span>
+  <h2 style="margin:10px 0 8px">Pattern бэлдэх</h2>
+  <p class="ad-note" style="margin-bottom:24px;max-width:560px">
+    Зургаа оруул → AI дэвсгэрийг цэвэрлэнэ → transparent PNG татаж ав.
+    Цагаан дэвсгэртэй хар дизайн хамгийн сайн гарна.
+  </p>
+
+  <!-- Upload -->
+  <div class="ad-card">
+    <label class="ad-drop" id="adDrop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      <p>Зураг сонгох (PNG / JPG)</p>
+      <input type="file" id="adFile" accept="image/*">
+    </label>
+    <div class="ad-status" id="adStatus"></div>
+    <div class="ad-bar" id="adBar"><i id="adBarFill"></i></div>
+
+    <div class="ad-preview" id="adPreview"><img id="adImg" alt="preview"></div>
+
+    <div class="ad-row" id="adActions" style="display:none">
+      <input class="ad-input" id="adName" placeholder="Файлын нэр (жнь: p31)" value="p31" style="width:200px">
+      <button class="btn btn-primary" id="adDownload">Transparent PNG татах</button>
+      <button class="btn btn-ghost" id="adReset">Дахин</button>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="ad-card">
+    <p class="tag mono" style="display:block;margin-bottom:16px">— Catalog-д хэрхэн нэмэх</p>
+    <div class="ad-step"><span class="ad-step-n">1</span><span class="ad-note">Татсан PNG-г <b>assets/patterns/</b> хавтсанд хийнэ (жнь: p31.png).</span></div>
+    <div class="ad-step"><span class="ad-step-n">2</span><span class="ad-note">GitHub repo дээр <b>github.dev</b> (цэг товч) ашиглан байршуулж commit хийнэ — эсвэл надад өгвөл нэмнэ.</span></div>
+    <div class="ad-step"><span class="ad-step-n">3</span><span class="ad-note"><b>catalog.html</b>-ийн GROUPS жагсаалтад <b>{id:'p31', name:'...'}</b> мөр нэмнэ. Тэгмэгц catalog + Try On tray-д гарч ирнэ.</span></div>
+    <p class="ad-note" style="margin-top:10px;color:var(--text-dim)">
+      Бүх хэрэглэгчид харагдахын тулд PNG нь repo-д орох ёстой (статик сайт). Автомат хадгалалт = Phase B (Google backend).
+    </p>
+  </div>
+</div>
+
+<script type="module">
+import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm';
+
+const fileInput = document.getElementById('adFile');
+const statusEl = document.getElementById('adStatus');
+const barEl = document.getElementById('adBar');
+const barFill = document.getElementById('adBarFill');
+const preview = document.getElementById('adPreview');
+const img = document.getElementById('adImg');
+const actions = document.getElementById('adActions');
+const nameInput = document.getElementById('adName');
+let blobUrl = null;
+
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  statusEl.textContent = 'AI дэвсгэр арилгаж байна…';
+  barEl.classList.add('show'); barFill.style.width = '5%';
+  actions.style.display = 'none';
+  try {
+    const blob = await removeBackground(file, {
+      progress: (key, cur, total) => {
+        const pct = total ? Math.round((cur/total)*100) : 0;
+        if (key && key.indexOf('fetch') === 0) { statusEl.textContent = `AI model татаж байна… ${pct}%`; barFill.style.width = Math.max(5,pct)+'%'; }
+        else { statusEl.textContent = 'Боловсруулж байна…'; barFill.style.width = '92%'; }
+      },
+    });
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
+    blobUrl = URL.createObjectURL(blob);
+    img.src = blobUrl;
+    preview.classList.add('show');
+    actions.style.display = 'flex';
+    statusEl.textContent = '✓ Дэвсгэр арилсан — доороос татаж ав';
+    barFill.style.width = '100%';
+    setTimeout(() => barEl.classList.remove('show'), 800);
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = '⚠ Алдаа гарлаа. Дахин оролдоно уу.';
+    barEl.classList.remove('show');
+  }
+});
+
+document.getElementById('adDownload').addEventListener('click', () => {
+  if (!blobUrl) return;
+  const name = (nameInput.value.trim() || 'pattern').replace(/[^a-z0-9_-]/gi,'');
+  const a = document.createElement('a');
+  a.href = blobUrl; a.download = name + '.png'; a.click();
+});
+document.getElementById('adReset').addEventListener('click', () => {
+  preview.classList.remove('show'); actions.style.display = 'none';
+  statusEl.textContent = ''; fileInput.value = '';
+});
+</script>
+</body>
+</html>
