@@ -1,76 +1,51 @@
 /* ============================================
    JEANS·INK — Mockup Studio
-   fabric.js canvas + imgly AI background removal
+   Real 2D jeans photo + CSS filter tint + fabric.js + imgly AI bg removal
    ============================================ */
 
 import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm';
 
-// ── Denim colors (tsagaan, tsenher, tsaivar tsenher, har, saaral) ──
+// ── Jeans base photos (must be LIGHT-colored so tint works) ──
+const JEANS = {
+  wide:   'assets/photos/jeans-wide.jpg',
+  skinny: 'assets/photos/jeans-skinny.jpg',
+};
+
+// ── Colors: swatch dot (UI) + CSS filter applied to the light base photo ──
 const COLORS = [
-  { key: 'white',     label: 'Цагаан',        hex: '#E7E8EC' },
-  { key: 'blue',      label: 'Цэнхэр',         hex: '#3F5E86' },
-  { key: 'lightblue', label: 'Цайвар цэнхэр',  hex: '#9FBDDC' },
-  { key: 'black',     label: 'Хар',            hex: '#26272B' },
-  { key: 'gray',      label: 'Саарал',         hex: '#71767C' },
+  { key: 'lightblue', label: 'Цайвар цэнхэр', swatch: '#9FBDDC', filter: 'none' },
+  { key: 'blue',      label: 'Цэнхэр',         swatch: '#3F5E86', filter: 'saturate(1.7) brightness(0.78) contrast(1.05)' },
+  { key: 'white',     label: 'Цагаан',         swatch: '#E7E8EC', filter: 'grayscale(0.55) brightness(1.22) saturate(0.5)' },
+  { key: 'gray',      label: 'Саарал',         swatch: '#71767C', filter: 'grayscale(1) brightness(1.0) contrast(0.98)' },
+  { key: 'black',     label: 'Хар',            swatch: '#26272B', filter: 'grayscale(1) brightness(0.32) contrast(1.15)' },
 ];
 
-// ── Stage dimensions (computed once) ──
+// ── State ──
+const state = { type: 'wide', color: COLORS[0], size: 'A4', price: 40000 };
+
+// ── Stage dimensions (portrait 3:4 to match product photos) ──
 const stageEl = document.getElementById('mkStage');
-const CW = Math.min(380, (window.innerWidth || 380) - 40);
-const CH = Math.round(CW * 1.5);
+const CW = Math.min(420, (window.innerWidth || 420) - 40);
+const CH = Math.round(CW * 1.33);
 stageEl.style.width = CW + 'px';
 stageEl.style.height = CH + 'px';
 
-// ── State ──
-const state = { type: 'wide', color: COLORS[1], size: 'A4', price: 40000 };
-
-// ── Jeans SVG builder (flat, tintable via fill) ──
-function jeansSVG(type, hex) {
-  // silhouette path in a 420x600 viewBox
-  const body = type === 'wide'
-    ? 'M138,66 H282 L302,300 L326,576 L252,576 L216,156 L210,168 L204,156 L168,576 L94,576 L118,300 Z'
-    : 'M146,66 H274 L286,300 L262,576 L226,576 L214,156 L210,168 L206,156 L194,576 L158,576 L134,300 Z';
-  const seamX = 210;
-  return `
-  <svg viewBox="0 0 420 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-    <defs>
-      <linearGradient id="sh" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
-        <stop offset="0.5" stop-color="#000000" stop-opacity="0"/>
-        <stop offset="1" stop-color="#000000" stop-opacity="0.14"/>
-      </linearGradient>
-      <clipPath id="bodyClip"><path d="${body}"/></clipPath>
-    </defs>
-    <!-- soft ground shadow -->
-    <ellipse cx="210" cy="588" rx="120" ry="10" fill="#000" opacity="0.06"/>
-    <!-- body -->
-    <path d="${body}" fill="${hex}"/>
-    <rect x="0" y="0" width="420" height="600" fill="url(#sh)" clip-path="url(#bodyClip)"/>
-    <!-- waistband -->
-    <g clip-path="url(#bodyClip)">
-      <rect x="120" y="60" width="180" height="34" fill="#000" opacity="0.10"/>
-      <line x1="120" y1="94" x2="300" y2="94" stroke="#000" stroke-opacity="0.18" stroke-width="2"/>
-      <!-- belt loops -->
-      <rect x="150" y="60" width="5" height="20" fill="#000" opacity="0.15"/>
-      <rect x="265" y="60" width="5" height="20" fill="#000" opacity="0.15"/>
-      <!-- button -->
-      <circle cx="210" cy="78" r="5" fill="#000" opacity="0.22"/>
-      <!-- fly stitch -->
-      <path d="M210,86 q10,40 0,72" fill="none" stroke="#fff" stroke-opacity="0.30" stroke-width="1.5" stroke-dasharray="4 4"/>
-      <!-- pockets -->
-      <path d="M150,96 q24,18 40,2" fill="none" stroke="#fff" stroke-opacity="0.28" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <path d="M230,98 q24,16 40,-2" fill="none" stroke="#fff" stroke-opacity="0.28" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <!-- center + leg seams -->
-      <line x1="${seamX}" y1="160" x2="${type==='wide'?170:185}" y2="572" stroke="#000" stroke-opacity="0.12" stroke-width="2"/>
-      <line x1="${seamX}" y1="160" x2="${type==='wide'?250:235}" y2="572" stroke="#000" stroke-opacity="0.12" stroke-width="2"/>
-    </g>
-    <!-- outline -->
-    <path d="${body}" fill="none" stroke="#000" stroke-opacity="0.16" stroke-width="2"/>
-  </svg>`;
-}
-
+// ── Jeans base photo element ──
 const jeansHost = document.getElementById('mkJeans');
-function renderJeans() { jeansHost.innerHTML = jeansSVG(state.type, state.color.hex); }
+const baseImg = document.createElement('img');
+baseImg.alt = 'jeans';
+baseImg.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+baseImg.crossOrigin = 'anonymous';
+baseImg.onerror = () => {
+  jeansHost.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px;font-family:Space Mono,monospace;font-size:.74rem;color:var(--text-dim)">Jeans зураг ('
+    + JEANS[state.type] + ') ачаалагдсангүй.<br>Зургийн файлыг assets/photos-д хадгална уу.</div>';
+};
+jeansHost.appendChild(baseImg);
+
+function renderJeans() {
+  baseImg.src = JEANS[state.type];
+  baseImg.style.filter = state.color.filter;
+}
 renderJeans();
 
 // ── fabric canvas overlay ──
@@ -85,9 +60,9 @@ let sticker = null;
 function addSticker(url) {
   fabric.Image.fromURL(url, (img) => {
     if (sticker) canvas.remove(sticker);
-    const target = CW * 0.42;
-    img.scaleToWidth(target);
-    img.set({ left: CW / 2, top: CH / 2, originX: 'center', originY: 'center', cornerColor: '#F0401E', cornerStyle: 'circle', transparentCorners: false, borderColor: '#F0401E' });
+    img.scaleToWidth(CW * 0.4);
+    img.set({ left: CW / 2, top: CH / 2, originX: 'center', originY: 'center',
+      cornerColor: '#F0401E', cornerStyle: 'circle', transparentCorners: false, borderColor: '#F0401E' });
     canvas.add(img); canvas.setActiveObject(img);
     sticker = img;
     emptyEl.classList.add('hide');
@@ -109,14 +84,14 @@ document.querySelectorAll('.mk-type').forEach(el => {
 const colorsHost = document.getElementById('mkColors');
 COLORS.forEach((c, i) => {
   const sw = document.createElement('button');
-  sw.className = 'mk-color' + (i === 1 ? ' active' : '');
-  sw.style.background = c.hex;
+  sw.className = 'mk-color' + (i === 0 ? ' active' : '');
+  sw.style.background = c.swatch;
   sw.title = c.label;
   sw.addEventListener('click', () => {
     document.querySelectorAll('.mk-color').forEach(x => x.classList.remove('active'));
     sw.classList.add('active');
     state.color = c;
-    renderJeans();
+    baseImg.style.filter = c.filter;
   });
   colorsHost.appendChild(sw);
 });
@@ -146,14 +121,12 @@ fileInput.addEventListener('change', async (e) => {
         }
       },
     });
-    const url = URL.createObjectURL(blob);
-    addSticker(url);
+    addSticker(URL.createObjectURL(blob));
     statusEl.textContent = '✓ Дэвсгэр арилсан';
     barFill.style.width = '100%';
-    setTimeout(() => { barEl.classList.remove('show'); }, 800);
+    setTimeout(() => barEl.classList.remove('show'), 800);
   } catch (err) {
     console.error('bg removal failed', err);
-    // fallback: use original image without removal
     statusEl.textContent = '⚠ Дэвсгэр арилгаж чадсангүй — эх зургийг ашиглалаа';
     barEl.classList.remove('show');
     addSticker(URL.createObjectURL(file));
@@ -184,21 +157,21 @@ document.getElementById('mkDelete').addEventListener('click', () => {
   canvas.remove(sticker); sticker = null; emptyEl.classList.remove('hide');
 });
 
-// ── Compose jeans SVG + sticker into one PNG (2x) ──
+// ── Compose base photo (with filter) + sticker into one PNG (2x) ──
 function composeMockup() {
   return new Promise((resolve) => {
     const scale = 2;
     const out = document.createElement('canvas');
     out.width = CW * scale; out.height = CH * scale;
     const ctx = out.getContext('2d');
-    const svgStr = jeansSVG(state.type, state.color.hex);
-    const svgImg = new Image();
-    svgImg.onload = () => {
-      ctx.drawImage(svgImg, 0, 0, out.width, out.height);
-      ctx.drawImage(canvas.lowerCanvasEl, 0, 0, out.width, out.height);
-      resolve(out.toDataURL('image/png'));
-    };
-    svgImg.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
+    const iw = baseImg.naturalWidth || CW, ih = baseImg.naturalHeight || CH;
+    const s = Math.min(out.width / iw, out.height / ih);
+    const dw = iw * s, dh = ih * s, dx = (out.width - dw) / 2, dy = (out.height - dh) / 2;
+    try { ctx.filter = state.color.filter === 'none' ? 'none' : state.color.filter; } catch (e) {}
+    ctx.drawImage(baseImg, dx, dy, dw, dh);
+    ctx.filter = 'none';
+    ctx.drawImage(canvas.lowerCanvasEl, 0, 0, out.width, out.height);
+    resolve(out.toDataURL('image/png'));
   });
 }
 
@@ -213,15 +186,11 @@ document.getElementById('mkDownload').addEventListener('click', async () => {
 // ── Continue → order (Phase B will wire payment + Sheet + notification) ──
 document.getElementById('mkContinue').addEventListener('click', async () => {
   if (!sticker) { alert('Эхлээд наах зургаа upload хийнэ үү.'); return; }
-  // generate a client-side order code (Phase B: POST to Apps Script → Sheet + notify)
   const code = 'JI-' + Math.random().toString(36).slice(2, 7).toUpperCase();
   const data = await composeMockup();
-  // auto-download mockup so the customer can attach it in DM for now
   const a = document.createElement('a');
   a.href = data; a.download = `jeans-ink-${code}.png`; a.click();
-  // stash order draft for the order page
   const draft = { code, type: state.type, color: state.color.label, size: state.size, price: state.price, ts: Date.now() };
   try { localStorage.setItem('ji_order_draft', JSON.stringify(draft)); } catch (e) {}
-  // route to order page with the code
   location.href = `order.html?code=${encodeURIComponent(code)}&type=${state.type}&color=${encodeURIComponent(state.color.label)}&size=${state.size}`;
 });
