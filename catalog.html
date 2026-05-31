@@ -50,7 +50,8 @@
     .select-bar.show { transform: translateY(0); }
     .select-bar-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
     .select-count { font-family: 'Montserrat', sans-serif; font-size: .85rem; }
-    .select-count b { color: var(--accent); }
+    .select-count b { color: var(--accent); transition: color .2s; }
+    .select-count b.limit { color: #FF5A3C; }
   </style>
 </head>
 <body class="theme-dark">
@@ -101,7 +102,7 @@
 <!-- SELECTION BAR -->
 <div class="select-bar" id="selectBar">
   <div class="container select-bar-inner">
-    <span class="select-count">Сонгосон: <b id="selCount">0</b> pattern</span>
+    <span class="select-count">Сонгосон: <b id="selCount">0 / 4</b></span>
     <button class="btn btn-primary" id="tryOnBtn">Try On дээр тавих →</button>
   </div>
 </div>
@@ -179,9 +180,17 @@ grid.innerHTML = GROUPS.map(g => `
 grid.querySelectorAll('.pat-tile').forEach(tile => {
   tile.addEventListener('click', () => {
     const id = tile.dataset.id;
-    if (selected.has(id)) { selected.delete(id); tile.classList.remove('sel'); }
-    else { selected.add(id); tile.classList.add('sel'); }
-    selCount.textContent = selected.size;
+    if (selected.has(id)) {
+      selected.delete(id); tile.classList.remove('sel');
+    } else {
+      if (selected.size >= 4) {            // max 4
+        selCount.classList.add('limit');
+        setTimeout(() => selCount.classList.remove('limit'), 500);
+        return;
+      }
+      selected.add(id); tile.classList.add('sel');
+    }
+    selCount.textContent = selected.size + ' / 4';
     bar.classList.toggle('show', selected.size > 0);
   });
 });
