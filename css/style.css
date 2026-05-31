@@ -400,31 +400,6 @@ body.theme-dark .nav-logo img { filter: invert(1); }   /* black mark -> white on
 /* light-lime accent on outline hover (light pages) */
 body.theme-light .btn-outline:hover { background: var(--lime-soft); border-color: var(--lime-soft); color: var(--ink); }
 
-/* ============================================
-   READABILITY: neon green is unreadable as TEXT on the
-   warm-white pages — use a dark lime for text/marks there.
-   (neon stays for fills/buttons/dark pages & image bands)
-   ============================================ */
-body.theme-light .accent-text,
-body.theme-light .tag,
-body.theme-light .patch-code,
-body.theme-light .patch-category,
-body.theme-light .stat-num,
-body.theme-light .step-num,
-body.theme-light .hero-title em,
-body.theme-light .nav-logo span,
-body.theme-light .faq-q span,
-body.theme-light .pricing-value.gold,
-body.theme-light .mk-status,
-body.theme-light .nav-mobile a.active,
-body.theme-light .nav-mobile a:hover,
-body.theme-light .footer-links a:hover,
-body.theme-light .footer-social a:hover { color: #4F6E10 !important; }
-
-body.theme-light .brand-statement em { color: #4F6E10 !important; }
-
-body.theme-light .hero-eyebrow-line,
-body.theme-light .gold-line { background: #4F6E10; }
 
 /* ============================================
    IMAGE BANDS (full-bleed parallax breaks)
