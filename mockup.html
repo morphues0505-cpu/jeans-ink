@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Try On — JEANS·INK Mockup</title>
+  <meta name="description" content="Upload your sticker, place it on jeans, see the mockup live.">
+  <link rel="stylesheet" href="css/style.css?v=3">
+  <!-- fabric.js (MIT) — canvas: drag / scale / rotate -->
+  <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
+  <style>
+    .mk-wrap { padding-top: calc(var(--nav-h) + 32px); padding-bottom: 64px; }
+    .mk-grid { display: grid; grid-template-columns: 360px 1fr; gap: 32px; align-items: start; }
+    @media (max-width: 900px){ .mk-grid { grid-template-columns: 1fr; } }
+
+    .mk-panel { display: flex; flex-direction: column; gap: 28px; }
+    .mk-step { border: 1px solid var(--border); background: var(--bg-2); }
+    .mk-step-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+    .mk-step-num { font-family:'Space Mono',monospace; font-size:.72rem; font-weight:700; width:24px; height:24px; display:flex; align-items:center; justify-content:center; background:var(--accent); color:var(--bg); }
+    body.theme-light .mk-step-num{ color:#fff; }
+    .mk-step-title { font-family:'Space Mono',monospace; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; }
+    .mk-step-body { padding: 18px; }
+
+    /* jeans type */
+    .mk-types { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .mk-type { border:1px solid var(--border-2); background:var(--bg); padding:14px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:8px; transition:border-color .2s, background .2s; }
+    .mk-type:hover{ border-color:var(--accent); }
+    .mk-type.active{ border-color:var(--accent); background:var(--accent-dim); }
+    .mk-type svg{ width:42px; height:60px; color:#7b8190; }
+    .mk-type span{ font-family:'Space Mono',monospace; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; }
+
+    /* colors */
+    .mk-colors { display:flex; gap:10px; flex-wrap:wrap; }
+    .mk-color { width:40px; height:40px; border-radius:50%; cursor:pointer; border:2px solid transparent; box-shadow:0 0 0 1px var(--border-2) inset; transition:transform .15s, border-color .2s; }
+    .mk-color:hover{ transform:scale(1.08); }
+    .mk-color.active{ border-color:var(--accent); }
+
+    /* upload */
+    .mk-upload { border:1px dashed var(--border-2); padding:24px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; }
+    .mk-upload:hover{ border-color:var(--accent); background:var(--accent-dim); }
+    .mk-upload svg{ width:30px; height:30px; color:var(--text-muted); margin-bottom:10px; }
+    .mk-upload p{ font-family:'Space Mono',monospace; font-size:.74rem; color:var(--text-muted); line-height:1.6; }
+    .mk-upload input{ display:none; }
+    .mk-status { margin-top:14px; font-family:'Space Mono',monospace; font-size:.72rem; color:var(--accent); display:none; }
+    .mk-status.show{ display:block; }
+    .mk-bar { height:3px; background:var(--border); margin-top:8px; overflow:hidden; display:none; }
+    .mk-bar.show{ display:block; }
+    .mk-bar i{ display:block; height:100%; width:0; background:var(--accent); transition:width .25s; }
+
+    /* sizes */
+    .mk-sizes{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .mk-size{ border:1px solid var(--border-2); background:var(--bg); padding:14px; cursor:pointer; transition:border-color .2s, background .2s; }
+    .mk-size:hover{ border-color:var(--accent); }
+    .mk-size.active{ border-color:var(--accent); background:var(--accent-dim); }
+    .mk-size b{ font-family:'Space Mono',monospace; font-size:.95rem; display:block; }
+    .mk-size span{ font-family:'Space Mono',monospace; font-size:.72rem; color:var(--text-muted); }
+
+    .mk-actions{ display:flex; flex-direction:column; gap:10px; }
+
+    /* canvas stage */
+    .mk-stage-wrap{ position:sticky; top:calc(var(--nav-h) + 24px); }
+    .mk-stage{ position:relative; margin:0 auto; background:var(--bg-2); border:1px solid var(--border); }
+    .mk-jeans{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+    .mk-jeans svg{ width:100%; height:100%; display:block; }
+    .mk-canvas{ position:absolute; inset:0; }
+    .mk-jeans{ z-index:1; }
+    .mk-stage .canvas-container{ position:absolute !important; inset:0 !important; z-index:2; }
+    .mk-empty{ z-index:1; }
+    .mk-hint{ font-family:'Space Mono',monospace; font-size:.72rem; color:var(--text-muted); text-align:center; margin-top:14px; line-height:1.6; }
+    .mk-empty{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; font-family:'Space Mono',monospace; font-size:.78rem; color:var(--text-dim); padding:24px; pointer-events:none; }
+    .mk-empty.hide{ display:none; }
+
+    .mk-toolbar{ display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+    .mk-tool{ font-family:'Space Mono',monospace; font-size:.68rem; letter-spacing:.05em; text-transform:uppercase; padding:8px 14px; border:1px solid var(--border-2); background:var(--bg-2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
+    .mk-tool:hover{ border-color:var(--accent); color:var(--accent); }
+
+    .mk-note{ font-family:'Space Mono',monospace; font-size:.68rem; color:var(--text-dim); line-height:1.6; margin-top:6px; }
+  </style>
+</head>
+<body class="theme-light">
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo mono">JEANS<span>·</span>INK</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="catalog.html">Catalog</a></li>
+      <li><a href="mockup.html">Try On</a></li>
+      <li><a href="how-it-works.html">Process</a></li>
+      <li><a href="track.html">Track</a></li>
+      <li><a href="order.html" class="nav-cta">Order Now</a></li>
+    </ul>
+    <button class="nav-burger" id="navBurger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="index.html">Home</a>
+  <a href="catalog.html">Catalog</a>
+  <a href="mockup.html">Try On</a>
+  <a href="how-it-works.html">Process</a>
+  <a href="track.html">Track Order</a>
+  <a href="order.html">Order Now →</a>
+</div>
+
+<div class="container mk-wrap">
+  <div class="page-header" style="padding-top:8px;padding-bottom:32px;border:none">
+    <span class="tag mono">— Mockup Studio</span>
+    <h2 style="margin-top:10px">Try It On</h2>
+    <p class="mono" style="color:var(--text-muted);font-size:.85rem;margin-top:10px;max-width:560px">
+      Jeans сонго → өнгө сонго → наах зургаа upload хий (дэвсгэр автоматаар арилна) → jeans дээрээ чирж, томруулж байрлуул.
+    </p>
+  </div>
+
+  <div class="mk-grid">
+    <!-- CONTROL PANEL -->
+    <div class="mk-panel">
+
+      <!-- Step 1: jeans type -->
+      <div class="mk-step">
+        <div class="mk-step-head"><span class="mk-step-num">1</span><span class="mk-step-title">Jeans төрөл</span></div>
+        <div class="mk-step-body">
+          <div class="mk-types">
+            <div class="mk-type active" data-type="wide">
+              <svg viewBox="0 0 60 84" fill="currentColor"><path d="M14 6 H46 L52 80 H34 L31 30 H29 L26 80 H8 Z"/></svg>
+              <span>Wide / Өргөн</span>
+            </div>
+            <div class="mk-type" data-type="skinny">
+              <svg viewBox="0 0 60 84" fill="currentColor"><path d="M18 6 H42 L40 80 H33 L31 30 H29 L27 80 H20 Z"/></svg>
+              <span>Skinny / Нарийн</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: color -->
+      <div class="mk-step">
+        <div class="mk-step-head"><span class="mk-step-num">2</span><span class="mk-step-title">Өнгө</span></div>
+        <div class="mk-step-body">
+          <div class="mk-colors" id="mkColors"></div>
+        </div>
+      </div>
+
+      <!-- Step 3: upload -->
+      <div class="mk-step">
+        <div class="mk-step-head"><span class="mk-step-num">3</span><span class="mk-step-title">Наах зураг</span></div>
+        <div class="mk-step-body">
+          <label class="mk-upload" id="mkUpload">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            <p>Зураг сонгох<br><span style="color:var(--text-dim)">PNG / JPG · дэвсгэр автоматаар арилна</span></p>
+            <input type="file" id="mkFile" accept="image/*">
+          </label>
+          <div class="mk-status" id="mkStatus">AI дэвсгэр арилгаж байна…</div>
+          <div class="mk-bar" id="mkBar"><i id="mkBarFill"></i></div>
+          <p class="mk-note">Анх удаа ~1 удаа AI model татна (хэдэн арван MB). Дараа нь хурдан.</p>
+        </div>
+      </div>
+
+      <!-- Step 4: size -->
+      <div class="mk-step">
+        <div class="mk-step-head"><span class="mk-step-num">4</span><span class="mk-step-title">Хэмжээ</span></div>
+        <div class="mk-step-body">
+          <div class="mk-sizes">
+            <div class="mk-size active" data-size="A4" data-price="40000"><b>A4</b><span>40,000₮</span></div>
+            <div class="mk-size" data-size="A3" data-price="100000"><b>A3</b><span>100,000₮</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: actions -->
+      <div class="mk-step">
+        <div class="mk-step-head"><span class="mk-step-num">5</span><span class="mk-step-title">Дуусгах</span></div>
+        <div class="mk-step-body mk-actions">
+          <button class="btn btn-outline" id="mkDownload">Mockup татах (PNG)</button>
+          <button class="btn btn-primary" id="mkContinue">Захиалга руу үргэлжлүүлэх →</button>
+          <p class="mk-note">Төлбөр, баталгаажуулалт дараагийн алхамд (Phase B) холбогдоно.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STAGE -->
+    <div class="mk-stage-wrap">
+      <div class="mk-stage" id="mkStage">
+        <div class="mk-jeans" id="mkJeans"></div>
+        <canvas class="mk-canvas" id="mkCanvas"></canvas>
+        <div class="mk-empty" id="mkEmpty">Зургаа upload хийхэд энд jeans дээр гарч ирнэ</div>
+      </div>
+      <div class="mk-toolbar">
+        <button class="mk-tool" id="mkCenter">Голлуулах</button>
+        <button class="mk-tool" id="mkFlip">Толин эргүүлэх</button>
+        <button class="mk-tool" id="mkDelete">Устгах</button>
+      </div>
+      <p class="mk-hint">Зургийн булангаас барьж томруулна · эргүүлнэ · чирж байрлуулна</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script src="js/mockup.js" type="module"></script>
+</body>
+</html>
