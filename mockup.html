@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Try On — JEANS·INK Mockup</title>
   <meta name="description" content="Upload your sticker, place it on jeans, see the mockup live.">
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=4">
   <!-- fabric.js (MIT) — canvas: drag / scale / rotate -->
   <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
   <style>
@@ -16,9 +16,9 @@
     .mk-panel { display: flex; flex-direction: column; gap: 28px; }
     .mk-step { border: 1px solid var(--border); background: var(--bg-2); }
     .mk-step-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
-    .mk-step-num { font-family:'Space Mono',monospace; font-size:.72rem; font-weight:700; width:24px; height:24px; display:flex; align-items:center; justify-content:center; background:var(--accent); color:var(--bg); }
+    .mk-step-num { font-family:'Montserrat',monospace; font-size:.72rem; font-weight:700; width:24px; height:24px; display:flex; align-items:center; justify-content:center; background:var(--accent); color:var(--bg); }
     body.theme-light .mk-step-num{ color:#fff; }
-    .mk-step-title { font-family:'Space Mono',monospace; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; }
+    .mk-step-title { font-family:'Montserrat',monospace; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; }
     .mk-step-body { padding: 18px; }
 
     /* jeans type */
@@ -27,7 +27,7 @@
     .mk-type:hover{ border-color:var(--accent); }
     .mk-type.active{ border-color:var(--accent); background:var(--accent-dim); }
     .mk-type svg{ width:42px; height:60px; color:#7b8190; }
-    .mk-type span{ font-family:'Space Mono',monospace; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; }
+    .mk-type span{ font-family:'Montserrat',monospace; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; }
 
     /* colors */
     .mk-colors { display:flex; gap:10px; flex-wrap:wrap; }
@@ -39,9 +39,9 @@
     .mk-upload { border:1px dashed var(--border-2); padding:24px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; }
     .mk-upload:hover{ border-color:var(--accent); background:var(--accent-dim); }
     .mk-upload svg{ width:30px; height:30px; color:var(--text-muted); margin-bottom:10px; }
-    .mk-upload p{ font-family:'Space Mono',monospace; font-size:.74rem; color:var(--text-muted); line-height:1.6; }
+    .mk-upload p{ font-family:'Montserrat',monospace; font-size:.74rem; color:var(--text-muted); line-height:1.6; }
     .mk-upload input{ display:none; }
-    .mk-status { margin-top:14px; font-family:'Space Mono',monospace; font-size:.72rem; color:var(--accent); display:none; }
+    .mk-status { margin-top:14px; font-family:'Montserrat',monospace; font-size:.72rem; color:var(--accent); display:none; }
     .mk-status.show{ display:block; }
     .mk-bar { height:3px; background:var(--border); margin-top:8px; overflow:hidden; display:none; }
     .mk-bar.show{ display:block; }
@@ -52,8 +52,8 @@
     .mk-size{ border:1px solid var(--border-2); background:var(--bg); padding:14px; cursor:pointer; transition:border-color .2s, background .2s; }
     .mk-size:hover{ border-color:var(--accent); }
     .mk-size.active{ border-color:var(--accent); background:var(--accent-dim); }
-    .mk-size b{ font-family:'Space Mono',monospace; font-size:.95rem; display:block; }
-    .mk-size span{ font-family:'Space Mono',monospace; font-size:.72rem; color:var(--text-muted); }
+    .mk-size b{ font-family:'Montserrat',monospace; font-size:.95rem; display:block; }
+    .mk-size span{ font-family:'Montserrat',monospace; font-size:.72rem; color:var(--text-muted); }
 
     .mk-actions{ display:flex; flex-direction:column; gap:10px; }
 
@@ -66,20 +66,20 @@
     .mk-jeans{ z-index:1; }
     .mk-stage .canvas-container{ position:absolute !important; inset:0 !important; z-index:2; }
     .mk-empty{ z-index:1; }
-    .mk-hint{ font-family:'Space Mono',monospace; font-size:.72rem; color:var(--text-muted); text-align:center; margin-top:14px; line-height:1.6; }
-    .mk-empty{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; font-family:'Space Mono',monospace; font-size:.78rem; color:var(--text-dim); padding:24px; pointer-events:none; }
+    .mk-hint{ font-family:'Montserrat',monospace; font-size:.72rem; color:var(--text-muted); text-align:center; margin-top:14px; line-height:1.6; }
+    .mk-empty{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; font-family:'Montserrat',monospace; font-size:.78rem; color:var(--text-dim); padding:24px; pointer-events:none; }
     .mk-empty.hide{ display:none; }
 
     .mk-view{ display:flex; justify-content:center; margin-bottom:14px; }
-    .mk-vbtn{ font-family:'Space Mono',monospace; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; padding:9px 24px; border:1px solid var(--border-2); background:var(--bg-2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
+    .mk-vbtn{ font-family:'Montserrat',monospace; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; padding:9px 24px; border:1px solid var(--border-2); background:var(--bg-2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
     .mk-vbtn + .mk-vbtn{ border-left:none; }
     .mk-vbtn.active{ background:var(--accent); color:var(--bg); border-color:var(--accent); }
     body.theme-light .mk-vbtn.active{ color:#fff; }
     .mk-toolbar{ display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
-    .mk-tool{ font-family:'Space Mono',monospace; font-size:.68rem; letter-spacing:.05em; text-transform:uppercase; padding:8px 14px; border:1px solid var(--border-2); background:var(--bg-2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
+    .mk-tool{ font-family:'Montserrat',monospace; font-size:.68rem; letter-spacing:.05em; text-transform:uppercase; padding:8px 14px; border:1px solid var(--border-2); background:var(--bg-2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
     .mk-tool:hover{ border-color:var(--accent); color:var(--accent); }
 
-    .mk-note{ font-family:'Space Mono',monospace; font-size:.68rem; color:var(--text-dim); line-height:1.6; margin-top:6px; }
+    .mk-note{ font-family:'Montserrat',monospace; font-size:.68rem; color:var(--text-dim); line-height:1.6; margin-top:6px; }
   </style>
 </head>
 <body class="theme-light">
