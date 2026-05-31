@@ -169,7 +169,7 @@ grid.innerHTML = GROUPS.map(g => `
   <div class="pat-grid" style="margin-bottom:48px">
     ${g.items.map(p => `
       <div class="pat-tile" data-id="${p.id}">
-        <img src="assets/patterns/${p.id}.png" alt="${p.name}" loading="lazy">
+        <img src="assets/patterns/${p.id}.png?v=2" alt="${p.name}" loading="lazy">
         <span class="pat-name">${p.name}</span>
         <span class="pat-check">✓</span>
       </div>`).join('')}
@@ -188,7 +188,7 @@ grid.querySelectorAll('.pat-tile').forEach(tile => {
 
 document.getElementById('tryOnBtn').addEventListener('click', () => {
   if (!selected.size) return;
-  const list = [...selected].map(id => `assets/patterns/${id}.png`);
+  const list = [...selected].map(id => `assets/patterns/${id}.png?v=2`);
   try { localStorage.setItem('ji_patterns', JSON.stringify(list)); } catch (e) {}
   location.href = 'mockup.html';
 });

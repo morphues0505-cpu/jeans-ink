@@ -286,7 +286,7 @@ document.getElementById('cfCopy').addEventListener('click', async () => {
 
 // ── Patterns chosen on the Catalog page → auto-add to FRONT ──
 (function fillTray() {
-  const DEFAULTS = ['p1','p2','p4','p5','p9','p11','p16','p21'].map(id => `assets/patterns/${id}.png`);
+  const DEFAULTS = ['p1','p2','p4','p5','p9','p11','p16','p21'].map(id => `assets/patterns/${id}.png?v=2`);
   let sel = [];
   try { sel = JSON.parse(localStorage.getItem('ji_patterns') || '[]'); } catch (e) {}
   localStorage.removeItem('ji_patterns');
