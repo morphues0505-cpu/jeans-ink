@@ -383,3 +383,8 @@ h1, h2, h3, .nav-logo, .big-num, .stat-num, .step-num, .hero-title {
 }
 /* Montserrat needs a touch more tracking on small uppercase labels */
 .mono, .tag, .badge, .nav-links a, .btn { letter-spacing: 0.04em; }
+
+/* Logo mark in nav */
+.nav-logo { display: inline-flex; align-items: center; }
+.nav-logo img { height: 22px; width: auto; }
+body.theme-dark .nav-logo img { filter: invert(1); }   /* black mark -> white on dark nav */
