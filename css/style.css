@@ -399,3 +399,28 @@ h1, h2, h3, .nav-logo, .big-num, .stat-num, .step-num, .hero-title {
 body.theme-dark .nav-logo img { filter: invert(1); }   /* black mark -> white on dark nav */
 /* light-lime accent on outline hover (light pages) */
 body.theme-light .btn-outline:hover { background: var(--lime-soft); border-color: var(--lime-soft); color: var(--ink); }
+
+/* ============================================
+   IMAGE BANDS (full-bleed parallax breaks)
+   ============================================ */
+.imgband {
+  position: relative; min-height: 72vh;
+  display: flex; align-items: center; justify-content: center;
+  background-size: cover; background-position: center;
+  background-attachment: fixed; text-align: center;
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.imgband::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(8,10,16,0.55), rgba(8,10,16,0.74));
+}
+.imgband-inner { position: relative; z-index: 1; max-width: 760px; padding: 0 24px; }
+.imgband h2 { color: #FEF9F5; }
+.imgband h2 em { font-style: normal; color: var(--accent); }
+.imgband p {
+  color: rgba(255,255,255,0.82); font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem; margin-top: 16px; letter-spacing: 0.02em;
+}
+@media (max-width: 768px) {
+  .imgband { background-attachment: scroll; min-height: 56vh; }
+}
