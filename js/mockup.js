@@ -105,6 +105,22 @@ function addSticker(url, side, idx) {
   }, { crossOrigin: 'anonymous' });
 }
 
+// ── Ready-sticker tray (tap to add to active side) ──
+const trayEl = document.getElementById('mkTray');
+const trayHint = document.getElementById('mkTrayHint');
+const traySet = new Set();
+function addToTray(src) {
+  if (traySet.has(src)) return;
+  traySet.add(src);
+  const item = document.createElement('div');
+  item.className = 'mk-tray-item';
+  item.title = 'Идэвхтэй тал дээр нэмэх';
+  item.innerHTML = `<img src="${src}" alt="">`;
+  item.addEventListener('click', () => addSticker(src, state.activeSide));
+  trayEl.appendChild(item);
+  if (trayHint) trayHint.textContent = 'Наалт дээр дарж идэвхтэй (сонгосон) тал дээрээ нэмнэ.';
+}
+
 // ── Type & color ──
 document.querySelectorAll('.mk-type').forEach(el => {
   el.addEventListener('click', () => {
@@ -144,7 +160,7 @@ fileInput.addEventListener('change', async (e) => {
       },
     });
     lastSticker = URL.createObjectURL(blob);
-    addSticker(lastSticker, state.activeSide);
+    addSticker(lastSticker, state.activeSide); addToTray(lastSticker);
     statusEl.textContent = `✓ Дэвсгэр арилсан — ${state.activeSide === 'back' ? 'хойд' : 'урд'} талд нэмэв`;
     barFill.style.width = '100%';
     setTimeout(() => barEl.classList.remove('show'), 800);
@@ -153,7 +169,7 @@ fileInput.addEventListener('change', async (e) => {
     statusEl.textContent = '⚠ Дэвсгэр арилгаж чадсангүй — эх зургийг ашиглалаа';
     barEl.classList.remove('show');
     lastSticker = URL.createObjectURL(file);
-    addSticker(lastSticker, state.activeSide);
+    addSticker(lastSticker, state.activeSide); addToTray(lastSticker);
   }
 });
 
@@ -269,12 +285,10 @@ document.getElementById('cfCopy').addEventListener('click', async () => {
 });
 
 // ── Patterns chosen on the Catalog page → auto-add to FRONT ──
-(function loadSelectedPatterns() {
+(function fillTray() {
+  const DEFAULTS = ['p1','p2','p4','p5','p9','p11','p16','p21'].map(id => `assets/patterns/${id}.png`);
   let sel = [];
   try { sel = JSON.parse(localStorage.getItem('ji_patterns') || '[]'); } catch (e) {}
-  if (sel.length) {
-    localStorage.removeItem('ji_patterns');
-    setActiveSide('front');
-    sel.forEach((src, i) => addSticker(src, 'front', i));
-  }
+  localStorage.removeItem('ji_patterns');
+  [...sel, ...DEFAULTS].forEach(addToTray);   // carried-from-catalog first, then defaults
 })();

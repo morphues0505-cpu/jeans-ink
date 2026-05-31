@@ -89,6 +89,11 @@
     .mk-tool:hover{ border-color:var(--accent); color:var(--accent); }
 
     .mk-note{ font-family:'Montserrat',monospace; font-size:.68rem; color:var(--text-dim); line-height:1.6; margin-top:6px; }
+    /* ready-sticker tray */
+    .mk-tray{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .mk-tray-item{ position:relative; aspect-ratio:1; background:#FEF9F5; border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; padding:6px; cursor:pointer; transition:transform .15s, border-color .2s; }
+    .mk-tray-item:hover{ border-color:var(--accent); transform:translateY(-2px); }
+    .mk-tray-item img{ max-width:90%; max-height:90%; object-fit:contain; pointer-events:none; }
   </style>
 </head>
 <body class="theme-dark">
@@ -167,6 +172,15 @@
           <div class="mk-status" id="mkStatus">AI дэвсгэр арилгаж байна…</div>
           <div class="mk-bar" id="mkBar"><i id="mkBarFill"></i></div>
           <p class="mk-note">Анх удаа ~1 удаа AI model татна (хэдэн арван MB). Дараа нь хурдан.</p>
+        </div>
+      </div>
+
+      <!-- Step: ready sticker tray -->
+      <div class="mk-step">
+        <div class="mk-step-head"><span class="mk-step-num">★</span><span class="mk-step-title">Бэлэн наалт</span></div>
+        <div class="mk-step-body">
+          <div class="mk-tray" id="mkTray"></div>
+          <p class="mk-note" id="mkTrayHint">Доорх наалт дээр дарж, идэвхтэй (сонгосон) тал дээрээ нэм. Дээр зургаа upload хийвэл бас энд нэмэгдэнэ.</p>
         </div>
       </div>
 
@@ -288,6 +302,6 @@
 </div>
 
 <script src="js/main.js"></script>
-<script src="js/mockup.js?v=9" type="module"></script>
+<script src="js/mockup.js?v=10" type="module"></script>
 </body>
 </html>
