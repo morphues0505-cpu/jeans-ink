@@ -75,6 +75,15 @@
     .mk-vbtn + .mk-vbtn{ border-left:none; }
     .mk-vbtn.active{ background:var(--accent); color:var(--bg); border-color:var(--accent); }
     body.theme-light .mk-vbtn.active{ color:#fff; }
+    /* front+back together */
+    .mk-side-pick{ display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:14px; flex-wrap:wrap; }
+    .mk-side-lbl{ font-family:'Montserrat',sans-serif; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+    .mk-stages{ display:flex; gap:14px; }
+    .mk-stage-col{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .mk-col-label{ font-family:'Montserrat',sans-serif; font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); }
+    .mk-stage-col .mk-stage{ width:100%; }
+    .mk-stage.sel{ outline:2px solid var(--accent); outline-offset:2px; }
+    @media(max-width:600px){ .mk-stages{ flex-direction:column; align-items:center; } .mk-stage-col{ width:100%; max-width:380px; } }
     .mk-toolbar{ display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
     .mk-tool{ font-family:'Montserrat',monospace; font-size:.68rem; letter-spacing:.05em; text-transform:uppercase; padding:8px 14px; border:1px solid var(--border-2); background:var(--bg-2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
     .mk-tool:hover{ border-color:var(--accent); color:var(--accent); }
@@ -186,21 +195,38 @@
 
     <!-- STAGE -->
     <div class="mk-stage-wrap">
-      <div class="mk-view" id="mkView">
-        <button class="mk-vbtn active" data-view="front">Урд</button>
-        <button class="mk-vbtn" data-view="back">Хойд</button>
+      <div class="mk-side-pick" id="mkSidePick">
+        <span class="mk-side-lbl">Стикер нэмэх тал:</span>
+        <button class="mk-vbtn active" data-side="front">Урд</button>
+        <button class="mk-vbtn" data-side="back">Хойд</button>
       </div>
-      <div class="mk-stage" id="mkStage">
-        <div class="mk-jeans" id="mkJeans"></div>
-        <canvas class="mk-canvas" id="mkCanvas"></canvas>
-        <div class="mk-empty" id="mkEmpty">Зургаа upload хийхэд энд jeans дээр гарч ирнэ</div>
+
+      <div class="mk-stages">
+        <div class="mk-stage-col">
+          <span class="mk-col-label">Урд / Front</span>
+          <div class="mk-stage sel" id="mkStageFront" data-side="front">
+            <div class="mk-jeans" id="mkJeansFront"></div>
+            <canvas class="mk-canvas" id="mkCanvasFront"></canvas>
+            <div class="mk-empty" id="mkEmptyFront">Урд тал</div>
+          </div>
+        </div>
+        <div class="mk-stage-col">
+          <span class="mk-col-label">Хойд / Back</span>
+          <div class="mk-stage" id="mkStageBack" data-side="back">
+            <div class="mk-jeans" id="mkJeansBack"></div>
+            <canvas class="mk-canvas" id="mkCanvasBack"></canvas>
+            <div class="mk-empty" id="mkEmptyBack">Хойд тал</div>
+          </div>
+        </div>
       </div>
+
       <div class="mk-toolbar">
+        <button class="mk-tool" id="mkOther">Нөгөө талд нэм</button>
         <button class="mk-tool" id="mkCenter">Голлуулах</button>
         <button class="mk-tool" id="mkFlip">Толин эргүүлэх</button>
         <button class="mk-tool" id="mkDelete">Устгах</button>
       </div>
-      <p class="mk-hint">Зургийн булангаас барьж томруулна · эргүүлнэ · чирж байрлуулна</p>
+      <p class="mk-hint">Тал сонгоод зургаа upload хий · булангаас барьж томруулна · чирж байрлуулна</p>
     </div>
   </div>
 </div>
@@ -260,6 +286,6 @@
 </div>
 
 <script src="js/main.js"></script>
-<script src="js/mockup.js?v=6" type="module"></script>
+<script src="js/mockup.js?v=7" type="module"></script>
 </body>
 </html>
