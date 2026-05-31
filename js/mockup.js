@@ -226,7 +226,7 @@ document.getElementById('mkContinue').addEventListener('click', async () => {
 });
 
 document.getElementById('cfConfirmBtn').addEventListener('click', () => {
-  lastCode = 'JI-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+  lastCode = String(Math.floor(10000 + Math.random() * 90000)); // random 5-digit (Phase B: Sheet ensures no repeats)
   document.getElementById('cfCode').textContent = lastCode;
   document.getElementById('cfImg2').src = lastMockup;
   document.getElementById('cfMsgr').href = FB_URL;

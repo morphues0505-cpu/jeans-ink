@@ -146,17 +146,15 @@
             class="track-input"
             id="trackInput"
             type="text"
-            placeholder="Жнь: 001/22 эсвэл #003"
-            maxlength="10"
+            placeholder="Жнь: 28471"
+            maxlength="6"
           >
           <button class="btn btn-primary" onclick="trackOrder()" id="trackBtn">
             Шалгах
           </button>
         </div>
         <p style="font-size:0.75rem;color:var(--text-dim);margin-top:10px">
-          Жишээ: <span class="mono" style="color:var(--text-muted)">001</span> ·
-          <span class="mono" style="color:var(--text-muted)">01/22</span> ·
-          <span class="mono" style="color:var(--text-muted)">#001</span>
+          Жишээ: <span class="mono" style="color:var(--text-muted)">28471</span> (5 оронтой дугаар)
         </p>
       </div>
 
@@ -253,26 +251,24 @@
 <script>
 // Demo data — захиалга нэмэхдээ энд оруулна
 const DEMO_ORDERS = {
-  '001': {
-    num: '001/22', design: '#002 VOID GEOMETRY', size: 'A4',
-    price: '29,000₮', advance: '—', remaining: '29,000₮',
-    status: 2,
-    date: '2026-05-29',
+  '28471': {
+    num: '28471', jeans: 'Wide / Цайвар цэнхэр', size: 'A4',
+    price: '29,000₮',
+    status: 1,
+    date: '2026-06-01',
     phone: '99xx-xxxx',
   },
 };
 
 const STATUSES = [
-  { label: 'Захиалга хүлээн авсан',   icon: '✓' },
-  { label: 'Урьдчилгаа баталгаажсан', icon: '✓' },
-  { label: 'Үйлдвэрлэлд',             icon: '⚙' },
-  { label: 'Хүргэлтэнд бэлэн',        icon: '📦' },
-  { label: 'Хүргэгдсэн',              icon: '🎉' },
+  { label: 'Захиалга авсаан',        icon: '✓' },
+  { label: 'Хийж байноо BRO',        icon: '⚙' },
+  { label: 'Дуусаад chatlyaa OK',    icon: '🎉' },
 ];
 
 function trackOrder() {
   const raw = document.getElementById('trackInput').value.trim();
-  const key = raw.replace(/[^0-9]/g, '').padStart(3, '0').slice(0, 3);
+  const key = raw.replace(/[^0-9]/g, '').slice(0, 5);
 
   document.getElementById('trackResult').style.display   = 'none';
   document.getElementById('trackNotFound').style.display = 'none';
@@ -289,11 +285,9 @@ function trackOrder() {
   document.getElementById('resultBadge').textContent     = STATUSES[order.status].label;
 
   document.getElementById('resultSummary').innerHTML = `
-    <div class="summary-row"><span class="summary-label">Хээ</span><span class="summary-value">${order.design}</span></div>
+    <div class="summary-row"><span class="summary-label">Jeans</span><span class="summary-value">${order.jeans}</span></div>
     <div class="summary-row"><span class="summary-label">Хэмжээ</span><span class="summary-value">${order.size}</span></div>
-    <div class="summary-row"><span class="summary-label">Нийт үнэ</span><span class="summary-value">${order.price}</span></div>
-    <div class="summary-row"><span class="summary-label">Урьдчилгаа</span><span class="summary-value" style="color:#00C864">${order.advance} ✓</span></div>
-    <div class="summary-row"><span class="summary-label">Үлдэгдэл</span><span class="summary-value" style="color:var(--accent)">${order.remaining}</span></div>
+    <div class="summary-row"><span class="summary-label">Үнэ</span><span class="summary-value" style="color:var(--accent)">${order.price}</span></div>
   `;
 
   document.getElementById('resultTimeline').innerHTML = STATUSES.map((s, i) => `
