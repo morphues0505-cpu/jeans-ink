@@ -1,51 +1,60 @@
 /* ============================================
    JEANS·INK — Mockup Studio
-   Real 2D jeans photo + CSS filter tint + fabric.js + imgly AI bg removal
+   Real 2D jeans photo PER COLOR + fabric.js + imgly AI bg removal
    ============================================ */
 
 import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm';
 
-// ── Jeans base photos (must be LIGHT-colored so tint works) ──
-const JEANS = {
-  wide:   'assets/photos/jeans-wide.jpg',
-  skinny: 'assets/photos/jeans-skinny.jpg',
-};
-
-// ── Colors: swatch dot (UI) + CSS filter applied to the light base photo ──
+// ── Colors: swatch dot (UI) + image key ──
+// Image file per type+color:  assets/photos/jeans-<type>-<key>.jpg
+// (fallback to assets/photos/jeans-<type>.jpg if a color photo is missing)
 const COLORS = [
-  { key: 'lightblue', label: 'Цайвар цэнхэр', swatch: '#9FBDDC', filter: 'none' },
-  { key: 'blue',      label: 'Цэнхэр',         swatch: '#3F5E86', filter: 'saturate(1.7) brightness(0.78) contrast(1.05)' },
-  { key: 'white',     label: 'Цагаан',         swatch: '#E7E8EC', filter: 'grayscale(0.55) brightness(1.22) saturate(0.5)' },
-  { key: 'gray',      label: 'Саарал',         swatch: '#71767C', filter: 'grayscale(1) brightness(1.0) contrast(0.98)' },
-  { key: 'black',     label: 'Хар',            swatch: '#26272B', filter: 'grayscale(1) brightness(0.32) contrast(1.15)' },
+  { key: 'lightblue', label: 'Цайвар цэнхэр', swatch: '#9FBDDC' },
+  { key: 'blue',      label: 'Цэнхэр',         swatch: '#3F5E86' },
+  { key: 'white',     label: 'Цагаан',         swatch: '#E7E8EC' },
+  { key: 'gray',      label: 'Саарал',         swatch: '#71767C' },
+  { key: 'black',     label: 'Хар',            swatch: '#26272B' },
 ];
 
 // ── State ──
 const state = { type: 'wide', color: COLORS[0], size: 'A4', price: 40000 };
 
-// ── Stage dimensions (portrait 3:4 to match product photos) ──
+// ── Stage dimensions (portrait 3:4) ──
 const stageEl = document.getElementById('mkStage');
 const CW = Math.min(420, (window.innerWidth || 420) - 40);
 const CH = Math.round(CW * 1.33);
 stageEl.style.width = CW + 'px';
 stageEl.style.height = CH + 'px';
 
-// ── Jeans base photo element ──
+// ── Jeans base photo element + missing-photo message ──
 const jeansHost = document.getElementById('mkJeans');
 const baseImg = document.createElement('img');
 baseImg.alt = 'jeans';
 baseImg.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
-baseImg.crossOrigin = 'anonymous';
-baseImg.onerror = () => {
-  jeansHost.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px;font-family:Space Mono,monospace;font-size:.74rem;color:var(--text-dim)">Jeans зураг ('
-    + JEANS[state.type] + ') ачаалагдсангүй.<br>Зургийн файлыг assets/photos-д хадгална уу.</div>';
-};
 jeansHost.appendChild(baseImg);
 
+const missMsg = document.createElement('div');
+missMsg.style.cssText = 'position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:Space Mono,monospace;font-size:.74rem;color:var(--text-dim)';
+jeansHost.appendChild(missMsg);
+
+function srcFor(type, key) { return `assets/photos/jeans-${type}-${key}.jpg`; }
+
 function renderJeans() {
-  baseImg.src = JEANS[state.type];
-  baseImg.style.filter = state.color.filter;
+  missMsg.style.display = 'none';
+  baseImg.style.display = 'block';
+  baseImg.dataset.stage = 'color';            // first try the per-color photo
+  baseImg.src = srcFor(state.type, state.color.key);
 }
+baseImg.onerror = () => {
+  if (baseImg.dataset.stage === 'color') {
+    baseImg.dataset.stage = 'generic';        // fall back to jeans-<type>.jpg
+    baseImg.src = `assets/photos/jeans-${state.type}.jpg`;
+  } else {
+    baseImg.style.display = 'none';
+    missMsg.style.display = 'flex';
+    missMsg.innerHTML = `«${state.color.label}» өнгийн зураг алга.<br>assets/photos/jeans-${state.type}-${state.color.key}.jpg хадгална уу.`;
+  }
+};
 renderJeans();
 
 // ── fabric canvas overlay ──
@@ -91,7 +100,7 @@ COLORS.forEach((c, i) => {
     document.querySelectorAll('.mk-color').forEach(x => x.classList.remove('active'));
     sw.classList.add('active');
     state.color = c;
-    baseImg.style.filter = c.filter;
+    renderJeans();
   });
   colorsHost.appendChild(sw);
 });
@@ -157,7 +166,7 @@ document.getElementById('mkDelete').addEventListener('click', () => {
   canvas.remove(sticker); sticker = null; emptyEl.classList.remove('hide');
 });
 
-// ── Compose base photo (with filter) + sticker into one PNG (2x) ──
+// ── Compose base photo + sticker into one PNG (2x) ──
 function composeMockup() {
   return new Promise((resolve) => {
     const scale = 2;
@@ -167,9 +176,7 @@ function composeMockup() {
     const iw = baseImg.naturalWidth || CW, ih = baseImg.naturalHeight || CH;
     const s = Math.min(out.width / iw, out.height / ih);
     const dw = iw * s, dh = ih * s, dx = (out.width - dw) / 2, dy = (out.height - dh) / 2;
-    try { ctx.filter = state.color.filter === 'none' ? 'none' : state.color.filter; } catch (e) {}
-    ctx.drawImage(baseImg, dx, dy, dw, dh);
-    ctx.filter = 'none';
+    if (baseImg.style.display !== 'none') ctx.drawImage(baseImg, dx, dy, dw, dh);
     ctx.drawImage(canvas.lowerCanvasEl, 0, 0, out.width, out.height);
     resolve(out.toDataURL('image/png'));
   });
