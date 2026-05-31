@@ -345,8 +345,10 @@ h4 { font-weight: 700; letter-spacing: -0.01em; }
    ============================================ */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(8px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
 .modal-overlay.open { opacity: 1; pointer-events: all; }
-.modal { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 0; padding: 44px; max-width: 540px; width: 100%; transform: scale(0.96); transition: transform 0.3s; }
-.modal-overlay.open .modal { transform: scale(1); }
+.modal { background: var(--bg-2); border: 1px solid var(--border-2); border-radius: 14px; padding: 44px; max-width: 540px; width: 100%;
+  transform: scale(0.8) translateY(30px); opacity: 0;
+  transition: transform 0.42s cubic-bezier(.34,1.56,.64,1), opacity 0.26s ease; }
+.modal-overlay.open .modal { transform: scale(1) translateY(0); opacity: 1; }
 .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
 .modal-close { width: 34px; height: 34px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s; }
 .modal-close:hover { border-color: var(--text); color: var(--text); }
