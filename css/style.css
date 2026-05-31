@@ -6,10 +6,12 @@
 
 /* ── Base palette (orange is constant) ── */
 :root {
-  --accent:      #C5F230;
+  --accent:      #C5F230;            /* FIT GREEN */
   --accent-dim:  rgba(197,242,48,0.16);
   --accent-dark: #A9DC1C;
-  --ink:         #0D0D0D;
+  --lime-soft:   #D6EE8F;            /* FIT GREEN 40% */
+  --char:        #2A2A2A;            /* BLACK 88% */
+  --ink:         #0D0D0D;            /* BLACK */
   --white:       #FEF9F5;
   --red:         #F0401E;
   --nav-h:       66px;
@@ -42,9 +44,9 @@ body.theme-light {
 body.theme-dark {
   --bg:          #0D0D0D;
   --bg-2:        #161616;
-  --bg-3:        #1F1F1F;
-  --border:      #2A2A2A;
-  --border-2:    #383838;
+  --bg-3:        #2A2A2A;            /* BLACK 88% — card/surface depth */
+  --border:      #2E2E2E;
+  --border-2:    #3C3C3C;
   --text:        #FEF9F5;
   --text-muted:  #8C8C86;
   --text-dim:    #4A4A47;
@@ -296,7 +298,7 @@ h4 { font-weight: 700; letter-spacing: -0.01em; }
 .step-item { padding: 44px 34px; background: var(--bg); transition: background 0.3s; position: relative; }
 .step-item:hover { background: var(--bg-2); }
 .step-num { font-weight: 900; font-size: 3.5rem; line-height: 1; letter-spacing: -0.04em; color: var(--accent); margin-bottom: 24px; }
-.step-icon { width: 46px; height: 46px; background: var(--accent-dim); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin-bottom: 22px; color: var(--accent); }
+.step-icon { width: 46px; height: 46px; background: var(--lime-soft); border: 1px solid var(--lime-soft); display: flex; align-items: center; justify-content: center; margin-bottom: 22px; color: var(--ink); }
 .step-title { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.01em; margin-bottom: 12px; }
 .step-desc { font-family: 'Montserrat', monospace; font-size: 0.78rem; color: var(--text-muted); line-height: 1.75; }
 
@@ -305,7 +307,7 @@ h4 { font-weight: 700; letter-spacing: -0.01em; }
    ============================================ */
 .process-list { display: flex; flex-direction: column; gap: 16px; }
 .process-step { display: flex; gap: 16px; align-items: flex-start; }
-.process-dot { width: 30px; height: 30px; min-width: 30px; background: var(--accent-dim); border: 1px solid var(--border-2); display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', monospace; font-size: 0.72rem; color: var(--accent); font-weight: 700; }
+.process-dot { width: 30px; height: 30px; min-width: 30px; background: var(--lime-soft); border: 1px solid var(--lime-soft); display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', monospace; font-size: 0.72rem; color: var(--ink); font-weight: 700; }
 .process-text { font-family: 'Montserrat', monospace; font-size: 0.82rem; color: var(--text-muted); padding-top: 5px; line-height: 1.65; }
 
 /* ============================================
@@ -395,3 +397,5 @@ h1, h2, h3, .nav-logo, .big-num, .stat-num, .step-num, .hero-title {
 .nav-logo { display: inline-flex; align-items: center; }
 .nav-logo img { height: 22px; width: auto; }
 body.theme-dark .nav-logo img { filter: invert(1); }   /* black mark -> white on dark nav */
+/* light-lime accent on outline hover (light pages) */
+body.theme-light .btn-outline:hover { background: var(--lime-soft); border-color: var(--lime-soft); color: var(--ink); }
