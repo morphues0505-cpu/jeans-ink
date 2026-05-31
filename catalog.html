@@ -3,142 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catalog — JEANS·INK</title>
+  <title>Patterns — JEANS·INK</title>
   <link rel="stylesheet" href="css/style.css?v=10">
   <style>
-    .filter-bar {
-      display: flex; gap: 10px; flex-wrap: wrap;
-      margin-bottom: 40px;
-    }
-    .filter-btn {
-      padding: 8px 18px;
-      border: 1px solid var(--border-2);
-      border-radius: 99px;
-      font-size: 0.78rem; font-weight: 500;
-      letter-spacing: 0.06em; text-transform: uppercase;
-      color: var(--text-muted);
-      background: transparent;
-      transition: all 0.2s; cursor: pointer;
-    }
-    .filter-btn:hover, .filter-btn.active {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-dim);
-    }
-
-    .patch-grid { gap: 20px; }
-
-    .patch-preview {
-      aspect-ratio: 3/4;
-      background: #0F0F0F;
-      overflow: hidden;
-    }
-    .patch-preview img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform 0.5s ease;
-      filter: grayscale(20%) contrast(1.05);
-    }
-    .patch-card:hover .patch-preview img {
-      transform: scale(1.06);
-      filter: grayscale(0%) contrast(1.1);
-    }
-
-    .size-selector {
-      display: flex; gap: 8px; margin-bottom: 16px;
-    }
-    .size-btn {
-      padding: 5px 12px;
-      border: 1px solid var(--border-2);
-      border-radius: 4px;
-      font-family: 'Montserrat', monospace;
-      font-size: 0.72rem; color: var(--text-muted);
-      background: transparent; cursor: pointer;
-      transition: all 0.2s;
-    }
-    .size-btn:hover, .size-btn.active {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .sold-overlay {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,0.6);
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: opacity 0.3s;
-    }
-    .patch-card.sold-out .sold-overlay { opacity: 1; }
-    .sold-text {
-      font-family: 'Montserrat', monospace;
-      font-size: 0.9rem; font-weight: 700;
-      letter-spacing: 0.15em; color: var(--text-muted);
-      border: 1px solid var(--text-muted);
-      padding: 8px 16px;
-    }
-
     .catalog-hero {
       background: var(--bg-2);
       border-bottom: 1px solid var(--border);
       padding: calc(var(--nav-h) + 48px) 0 48px;
     }
-    .catalog-hero-inner {
-      display: flex; align-items: flex-end;
-      justify-content: space-between; gap: 24px;
-      flex-wrap: wrap;
+    .pat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px;
+    }
+    .pat-tile {
+      position: relative; aspect-ratio: 1;
+      background: #FEF9F5; border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px; transition: transform .2s, border-color .2s, outline-color .2s;
+    }
+    .pat-tile img { max-width: 82%; max-height: 82%; object-fit: contain; pointer-events: none; }
+    .pat-tile:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .pat-tile.sel { outline: 3px solid var(--accent); outline-offset: -3px; border-color: var(--accent); }
+    .pat-check {
+      position: absolute; top: 8px; right: 8px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--accent); color: #0D0D0D;
+      display: none; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: 800;
+    }
+    .pat-tile.sel .pat-check { display: flex; }
+    .pat-name {
+      position: absolute; bottom: 8px; left: 10px;
+      font-family: 'Montserrat', sans-serif; font-size: .6rem;
+      letter-spacing: .08em; text-transform: uppercase; color: #6E6A66;
     }
 
-    .drop-info {
-      background: var(--bg-2);
-      border: 1px solid var(--border);
-      border-radius: 8px; padding: 20px 24px;
-      display: flex; gap: 32px;
-      margin-bottom: 40px; flex-wrap: wrap;
+    /* selection bar */
+    .select-bar {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      background: rgba(13,13,13,0.94); backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border); padding: 14px 0; z-index: 500;
+      transform: translateY(120%); transition: transform .3s cubic-bezier(.22,1,.36,1);
     }
-    .drop-stat { }
-    .drop-stat-num {
-      font-family: 'Montserrat', monospace;
-      font-size: 1.4rem; font-weight: 700;
-      color: var(--accent); display: block;
-    }
-    .drop-stat-label {
-      font-size: 0.72rem; text-transform: uppercase;
-      letter-spacing: 0.1em; color: var(--text-muted);
-    }
-
-    /* Modal detail */
-    .modal-detail-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-    @media(max-width:600px){ .modal-detail-grid{grid-template-columns:1fr;} }
-    .modal-detail-img {
-      border-radius: 8px; overflow: hidden;
-      aspect-ratio: 3/4; background: #0f0f0f;
-    }
-    .modal-detail-img img {
-      width:100%; height:100%; object-fit: cover;
-      filter: grayscale(15%) contrast(1.05);
-    }
-    .modal-detail-info { display: flex; flex-direction: column; }
-    .modal-price-row {
-      display: flex; align-items: baseline; gap: 12px;
-      margin: 16px 0;
-    }
-    .modal-price-main {
-      font-family: 'Montserrat', monospace;
-      font-size: 1.4rem; font-weight: 700;
-    }
-    .modal-price-alt {
-      font-family: 'Montserrat', monospace;
-      font-size: 0.85rem; color: var(--text-muted);
-    }
-    .modal-actions { margin-top: auto; display: flex; gap: 12px; flex-wrap: wrap; }
-    .modal-stock-bar { margin: 16px 0 8px; }
-    .modal-stock-label {
-      display: flex; justify-content: space-between;
-      font-size: 0.75rem; color: var(--text-muted);
-      margin-bottom: 6px;
-    }
+    .select-bar.show { transform: translateY(0); }
+    .select-bar-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .select-count { font-family: 'Montserrat', sans-serif; font-size: .85rem; }
+    .select-count b { color: var(--accent); }
   </style>
 </head>
 <body class="theme-dark">
@@ -167,101 +79,35 @@
   <a href="order.html">Order Now →</a>
 </div>
 
-<!-- CATALOG HERO -->
+<!-- HERO -->
 <div class="catalog-hero">
   <div class="container">
-    <div class="catalog-hero-inner">
-      <div>
-        <span class="tag mono" style="display:block;margin-bottom:12px">— Drop 01 / 2026</span>
-        <h1 style="font-size:clamp(2rem,5vw,3.5rem)">All Designs</h1>
-        <p style="color:var(--text-muted);margin-top:12px;max-width:460px">
-          8 patterns. Hand-applied to your jeans. Each numbered — never restocked.
-        </p>
-      </div>
-      <div class="drop-info">
-        <div class="drop-stat">
-          <span class="drop-stat-num" id="totalAvail">176</span>
-          <span class="drop-stat-label">Total pieces</span>
-        </div>
-        <div class="drop-stat">
-          <span class="drop-stat-num" id="totalSold">0</span>
-          <span class="drop-stat-label">Sold</span>
-        </div>
-        <div class="drop-stat">
-          <span class="drop-stat-num">8</span>
-          <span class="drop-stat-label">Designs</span>
-        </div>
-      </div>
-    </div>
+    <span class="tag mono" style="display:block;margin-bottom:12px">— Patterns / Tribal Geometry</span>
+    <h1 style="font-size:clamp(2rem,5vw,3.5rem)">Pick your pattern</h1>
+    <p style="color:var(--text-muted);margin-top:14px;max-width:520px;line-height:1.7">
+      Дуртай хээгээ сонгоод <b style="color:var(--text)">Try On</b> дээр өөрийн jeans дээрээ тавь.
+      Хэдэн ч pattern сонгож болно.
+    </p>
   </div>
 </div>
 
-<!-- CATALOG BODY -->
-<section class="section">
+<!-- PATTERN GRID -->
+<section class="section" style="padding-bottom:120px">
   <div class="container">
-
-    <div class="filter-bar">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="Mongolian">Mongolian</button>
-      <button class="filter-btn" data-filter="Tribal">Tribal</button>
-      <button class="filter-btn" data-filter="Abstract">Abstract</button>
-      <button class="filter-btn" data-filter="Geometric">Geometric</button>
-      <button class="filter-btn" data-filter="Minimal">Minimal</button>
-    </div>
-
-    <div class="patch-grid" id="catalogGrid"></div>
-
+    <div class="pat-grid" id="patGrid"></div>
   </div>
 </section>
 
-<!-- PATCH DETAIL MODAL -->
-<div class="modal-overlay" id="patchModal">
-  <div class="modal" style="max-width:680px">
-    <div class="modal-header">
-      <div>
-        <span class="patch-code" id="modalCode" style="font-family:'Montserrat',monospace;font-size:0.75rem;color:var(--accent)"></span>
-        <h3 id="modalName" style="margin-top:4px"></h3>
-      </div>
-      <button class="modal-close" onclick="closeModal('patchModal')">✕</button>
-    </div>
-    <div class="modal-detail-grid">
-      <div class="modal-detail-img">
-        <img id="modalImg" src="" alt="">
-      </div>
-      <div class="modal-detail-info">
-        <span class="badge badge-gold" id="modalCategory" style="width:fit-content"></span>
-        <div class="modal-price-row">
-          <span class="modal-price-main">29,000₮</span>
-          <span class="modal-price-alt">A3: 49,000₮</span>
-        </div>
-        <div class="modal-stock-bar">
-          <div class="modal-stock-label">
-            <span>Availability</span>
-            <span id="modalStockText"></span>
-          </div>
-          <div class="stock-bar"><div class="stock-fill" id="modalStockFill" style="width:100%"></div></div>
-        </div>
-        <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.7;margin-top:8px">
-          Heat-press технологиор хийгдсэн. Denim-д зориулан тохируулсан.
-          30°C-д урвуу талаас угаахад тэсвэртэй.
-        </p>
-        <div style="margin-top:16px;padding:14px;background:var(--bg-3);border-radius:6px;border:1px solid var(--border)">
-          <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px" class="mono">Хэмжээ</p>
-          <p style="font-size:0.85rem">A4 (21×29.7cm) · A3 (29.7×42cm)</p>
-        </div>
-        <div class="modal-actions">
-          <a href="order.html" class="btn btn-primary" style="flex:1;justify-content:center">
-            Order This Design
-          </a>
-          <a href="how-it-works.html" class="btn btn-ghost">How it works</a>
-        </div>
-      </div>
-    </div>
+<!-- SELECTION BAR -->
+<div class="select-bar" id="selectBar">
+  <div class="container select-bar-inner">
+    <span class="select-count">Сонгосон: <b id="selCount">0</b> pattern</span>
+    <button class="btn btn-primary" id="tryOnBtn">Try On дээр тавих →</button>
   </div>
 </div>
 
 <!-- FOOTER -->
-<footer class="footer">
+<footer class="footer" style="margin-bottom:64px">
   <div class="container">
     <div class="footer-inner">
       <div class="footer-brand">
@@ -298,93 +144,48 @@
 
 <script src="js/main.js"></script>
 <script>
-const CATALOG = [
-  { id:'001', name:'ALTAN URAG',    category:'Mongolian', total:22, sold:0, img:'assets/photos/CLON (5).jpg' },
-  { id:'002', name:'VOID GEOMETRY', category:'Geometric', total:22, sold:0, img:'assets/photos/CLON (1).png' },
-  { id:'003', name:'TRIBAL MARK',   category:'Tribal',    total:22, sold:0, img:'assets/photos/CLON (40).jpg' },
-  { id:'004', name:'URBAN GLITCH',  category:'Abstract',  total:22, sold:0, img:'assets/photos/CLON (38).jpg' },
-  { id:'005', name:'NIGHT SUTRA',   category:'Minimal',   total:22, sold:0, img:'assets/photos/CLON (35).jpg' },
-  { id:'006', name:'STEPPE LINE',   category:'Mongolian', total:22, sold:0, img:'assets/photos/CLON (47).jpg' },
-  { id:'007', name:'RAW CIRCUIT',   category:'Geometric', total:22, sold:0, img:'assets/photos/CLON (7).jpg' },
-  { id:'008', name:'GHOST KNOT',    category:'Abstract',  total:22, sold:0, img:'assets/photos/CLON (4).png' },
+const PATTERNS = [
+  { id:'p1',  name:'Liquid' },
+  { id:'p2',  name:'Flame' },
+  { id:'p3',  name:'Mark' },
+  { id:'p4',  name:'Star' },
+  { id:'p5',  name:'Swoosh' },
+  { id:'p6',  name:'Dragon' },
+  { id:'p7',  name:'Eye' },
+  { id:'p8',  name:'Enso' },
+  { id:'p9',  name:'Sparkle' },
+  { id:'p10', name:'Tribe' },
 ];
 
-function renderCatalog(filter = 'all') {
-  const grid = document.getElementById('catalogGrid');
-  const items = filter === 'all' ? CATALOG : CATALOG.filter(p => p.category === filter);
-  const avail = CATALOG.reduce((a, p) => a + (p.total - p.sold), 0);
-  const sold  = CATALOG.reduce((a, p) => a + p.sold, 0);
-  document.getElementById('totalAvail').textContent = avail;
-  document.getElementById('totalSold').textContent  = sold;
+const selected = new Set();
+const grid = document.getElementById('patGrid');
+const bar = document.getElementById('selectBar');
+const selCount = document.getElementById('selCount');
 
-  grid.innerHTML = items.map(p => {
-    const remaining = p.total - p.sold;
-    const pct = Math.round((remaining / p.total) * 100);
-    const isSold = remaining === 0;
-    return `
-    <div class="patch-card${isSold?' sold-out':''} reveal" onclick="openDetail('${p.id}')">
-      <div class="patch-preview">
-        <img src="${p.img}" alt="${p.name}" loading="lazy">
-        <div class="patch-preview-label">
-          <span class="badge badge-gold">#${p.id}</span>
-        </div>
-        <div class="patch-preview-stock">
-          ${isSold
-            ? '<span class="badge badge-sold">Sold Out</span>'
-            : `<span class="badge badge-dark mono">${remaining}/22</span>`}
-        </div>
-        <div class="sold-overlay"><span class="sold-text">SOLD OUT</span></div>
-      </div>
-      <div class="patch-info">
-        <div class="patch-code">#${p.id}</div>
-        <div class="patch-name">${p.name}</div>
-        <div class="patch-category">${p.category}</div>
-        <div class="stock-bar" style="margin-bottom:16px">
-          <div class="stock-fill" style="width:${pct}%"></div>
-        </div>
-        <div class="patch-footer">
-          <div class="patch-price">
-            29,000₮
-            <span>A4 · A3: 49,000₮</span>
-          </div>
-          <span class="btn btn-outline" style="padding:8px 14px;font-size:0.75rem">
-            ${isSold ? 'Sold Out' : 'Details →'}
-          </span>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+grid.innerHTML = PATTERNS.map(p => `
+  <div class="pat-tile" data-id="${p.id}">
+    <img src="assets/patterns/${p.id}.png" alt="${p.name}" loading="lazy">
+    <span class="pat-name">${p.name}</span>
+    <span class="pat-check">✓</span>
+  </div>
+`).join('');
 
-  grid.querySelectorAll('.reveal').forEach(el => {
-    setTimeout(() => el.classList.add('visible'), 50);
-  });
-}
-
-function openDetail(id) {
-  const p = CATALOG.find(x => x.id === id);
-  if (!p) return;
-  const remaining = p.total - p.sold;
-  const pct = Math.round((remaining / p.total) * 100);
-  document.getElementById('modalCode').textContent = `#${p.id}`;
-  document.getElementById('modalName').textContent = p.name;
-  document.getElementById('modalCategory').textContent = p.category;
-  document.getElementById('modalImg').src = p.img;
-  document.getElementById('modalImg').alt = p.name;
-  document.getElementById('modalStockText').textContent = `${remaining} / ${p.total} remaining`;
-  document.getElementById('modalStockFill').style.width = pct + '%';
-  openModal('patchModal');
-}
-
-// Filter buttons
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderCatalog(btn.dataset.filter);
+grid.querySelectorAll('.pat-tile').forEach(tile => {
+  tile.addEventListener('click', () => {
+    const id = tile.dataset.id;
+    if (selected.has(id)) { selected.delete(id); tile.classList.remove('sel'); }
+    else { selected.add(id); tile.classList.add('sel'); }
+    selCount.textContent = selected.size;
+    bar.classList.toggle('show', selected.size > 0);
   });
 });
 
-renderCatalog();
+document.getElementById('tryOnBtn').addEventListener('click', () => {
+  if (!selected.size) return;
+  const list = [...selected].map(id => `assets/patterns/${id}.png`);
+  try { localStorage.setItem('ji_patterns', JSON.stringify(list)); } catch (e) {}
+  location.href = 'mockup.html';
+});
 </script>
 </body>
 </html>

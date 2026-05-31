@@ -91,15 +91,15 @@ document.querySelectorAll('.mk-side-pick .mk-vbtn').forEach(b => {
 });
 
 // ── Add sticker to a side ──
-function addSticker(url, side) {
+function addSticker(url, side, idx) {
   const s = sides[side];
   fabric.Image.fromURL(url, (img) => {
-    if (s.sticker) s.canvas.remove(s.sticker);
     img.scaleToWidth(CW * 0.42);
-    img.set({ left: CW / 2, top: CH / 2, originX: 'center', originY: 'center',
+    const off = (idx || 0) * 20;
+    img.set({ left: CW / 2 + off, top: CH / 2 + off, originX: 'center', originY: 'center',
       cornerColor: '#C5F230', cornerStyle: 'circle', transparentCorners: false, borderColor: '#C5F230' });
     s.canvas.add(img); s.canvas.setActiveObject(img);
-    s.sticker = img;
+    s.sticker = img;             // last added (stacking allowed — several stickers per side)
     s.emptyEl.classList.add('hide');
     s.canvas.renderAll();
   }, { crossOrigin: 'anonymous' });
@@ -267,3 +267,14 @@ document.getElementById('cfCopy').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(lastCode); document.getElementById('cfCopy').textContent = '✓ Хуулсан'; }
   catch (e) { alert('Захиалгын дугаар: ' + lastCode); }
 });
+
+// ── Patterns chosen on the Catalog page → auto-add to FRONT ──
+(function loadSelectedPatterns() {
+  let sel = [];
+  try { sel = JSON.parse(localStorage.getItem('ji_patterns') || '[]'); } catch (e) {}
+  if (sel.length) {
+    localStorage.removeItem('ji_patterns');
+    setActiveSide('front');
+    sel.forEach((src, i) => addSticker(src, 'front', i));
+  }
+})();
