@@ -70,6 +70,11 @@
     .mk-empty{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; font-family:'Space Mono',monospace; font-size:.78rem; color:var(--text-dim); padding:24px; pointer-events:none; }
     .mk-empty.hide{ display:none; }
 
+    .mk-view{ display:flex; justify-content:center; margin-bottom:14px; }
+    .mk-vbtn{ font-family:'Space Mono',monospace; font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; padding:9px 24px; border:1px solid var(--border-2); background:var(--bg-2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
+    .mk-vbtn + .mk-vbtn{ border-left:none; }
+    .mk-vbtn.active{ background:var(--accent); color:var(--bg); border-color:var(--accent); }
+    body.theme-light .mk-vbtn.active{ color:#fff; }
     .mk-toolbar{ display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
     .mk-tool{ font-family:'Space Mono',monospace; font-size:.68rem; letter-spacing:.05em; text-transform:uppercase; padding:8px 14px; border:1px solid var(--border-2); background:var(--bg-2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
     .mk-tool:hover{ border-color:var(--accent); color:var(--accent); }
@@ -161,8 +166,8 @@
         <div class="mk-step-head"><span class="mk-step-num">4</span><span class="mk-step-title">Хэмжээ</span></div>
         <div class="mk-step-body">
           <div class="mk-sizes">
-            <div class="mk-size active" data-size="A4" data-price="40000"><b>A4</b><span>40,000₮</span></div>
-            <div class="mk-size" data-size="A3" data-price="100000"><b>A3</b><span>100,000₮</span></div>
+            <div class="mk-size active" data-size="A4" data-price="29000"><b>A4</b><span>29,000₮</span></div>
+            <div class="mk-size" data-size="A3" data-price="49000"><b>A3</b><span>49,000₮</span></div>
           </div>
         </div>
       </div>
@@ -181,6 +186,10 @@
 
     <!-- STAGE -->
     <div class="mk-stage-wrap">
+      <div class="mk-view" id="mkView">
+        <button class="mk-vbtn active" data-view="front">Урд</button>
+        <button class="mk-vbtn" data-view="back">Хойд</button>
+      </div>
       <div class="mk-stage" id="mkStage">
         <div class="mk-jeans" id="mkJeans"></div>
         <canvas class="mk-canvas" id="mkCanvas"></canvas>
@@ -196,7 +205,55 @@
   </div>
 </div>
 
+<!-- CONFIRM / RECEIPT MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div>
+        <span class="tag mono" id="cfStep">— Баталгаажуулах</span>
+        <h3 id="cfTitle" style="margin-top:8px">Захиалга</h3>
+      </div>
+      <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+
+    <!-- state: confirm -->
+    <div id="cfConfirm">
+      <img id="cfImg" alt="mockup" style="width:100%;border:1px solid var(--border);margin-bottom:18px;background:#fff">
+      <div class="mono" id="cfSummary" style="font-size:.82rem;line-height:1.9;color:var(--text-muted)"></div>
+      <div style="display:flex;align-items:baseline;gap:12px;margin:16px 0">
+        <span class="mono" style="font-size:.72rem;letter-spacing:.08em;color:var(--text-muted)">ТӨЛБӨР</span>
+        <span id="cfPrice" style="font-weight:900;font-size:1.9rem;letter-spacing:-.02em;color:var(--accent)"></span>
+      </div>
+      <p class="mono" style="font-size:.72rem;color:var(--text-dim);line-height:1.7;margin-bottom:18px">
+        Наалт нь сонгосон хэмжээнд (A4/A3) багтана. 50% урьдчилгаатай.
+      </p>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" id="cfConfirmBtn" style="flex:1">Баталгаажуулах</button>
+        <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Болих</button>
+      </div>
+    </div>
+
+    <!-- state: receipt -->
+    <div id="cfReceipt" style="display:none">
+      <div style="text-align:center;margin-bottom:18px">
+        <span class="mono" style="font-size:.72rem;letter-spacing:.08em;color:var(--text-muted)">ЗАХИАЛГЫН ДУГААР</span>
+        <div id="cfCode" style="font-weight:900;font-size:2.2rem;letter-spacing:.04em;color:var(--accent);margin-top:4px"></div>
+      </div>
+      <img id="cfImg2" alt="mockup" style="width:100%;border:1px solid var(--border);margin-bottom:18px;background:#fff">
+      <p class="mono" style="font-size:.82rem;line-height:1.7;color:var(--text);margin-bottom:6px">📸 Энэ дэлгэцийг <b>screenshot</b> хийж хадгалаарай.</p>
+      <p class="mono" style="font-size:.72rem;line-height:1.7;color:var(--text-muted);margin-bottom:18px">
+        Захиалгын дугаар + mockup зургаа Facebook Messenger-ээр бидэнд илгээж, 50% урьдчилгаагаа төлснөөр захиалга баталгаажна.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <a class="btn btn-primary" id="cfMsgr" target="_blank" rel="noopener">Messenger-ээр илгээх →</a>
+        <button class="btn btn-outline" id="cfDownload">Mockup татах (PNG)</button>
+        <button class="btn btn-ghost" id="cfCopy">Дугаар хуулах</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="js/main.js"></script>
-<script src="js/mockup.js?v=3" type="module"></script>
+<script src="js/mockup.js?v=5" type="module"></script>
 </body>
 </html>

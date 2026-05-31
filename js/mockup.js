@@ -17,7 +17,8 @@ const COLORS = [
 ];
 
 // ── State ──
-const state = { type: 'wide', color: COLORS[0], size: 'A4', price: 40000 };
+const state = { type: 'wide', color: COLORS[0], view: 'front', size: 'A4', price: 29000 };
+const FB_URL = 'https://www.facebook.com/profile.php?id=61589026276209';
 
 // ── Stage dimensions (portrait 3:4) ──
 const stageEl = document.getElementById('mkStage');
@@ -37,7 +38,9 @@ const missMsg = document.createElement('div');
 missMsg.style.cssText = 'position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:Space Mono,monospace;font-size:.74rem;color:var(--text-dim)';
 jeansHost.appendChild(missMsg);
 
-function srcFor(type, key) { return `assets/photos/jeans-${type}-${key}.jpg`; }
+function viewSuffix() { return state.view === 'back' ? '-back' : ''; }
+function srcFor(type, key) { return `assets/photos/jeans-${type}-${key}${viewSuffix()}.jpg`; }
+function genericFor(type) { return `assets/photos/jeans-${type}${viewSuffix()}.jpg`; }
 
 function renderJeans() {
   missMsg.style.display = 'none';
@@ -47,15 +50,26 @@ function renderJeans() {
 }
 baseImg.onerror = () => {
   if (baseImg.dataset.stage === 'color') {
-    baseImg.dataset.stage = 'generic';        // fall back to jeans-<type>.jpg
-    baseImg.src = `assets/photos/jeans-${state.type}.jpg`;
+    baseImg.dataset.stage = 'generic';        // fall back to jeans-<type>[-back].jpg
+    baseImg.src = genericFor(state.type);
   } else {
     baseImg.style.display = 'none';
     missMsg.style.display = 'flex';
-    missMsg.innerHTML = `«${state.color.label}» өнгийн зураг алга.<br>assets/photos/jeans-${state.type}-${state.color.key}.jpg хадгална уу.`;
+    const v = state.view === 'back' ? 'хойд' : 'урд';
+    missMsg.innerHTML = `«${state.color.label}» (${v}) зураг алга.<br>assets/photos/jeans-${state.type}-${state.color.key}${viewSuffix()}.jpg хадгална уу.`;
   }
 };
 renderJeans();
+
+// ── View toggle (front / back) ──
+document.querySelectorAll('.mk-vbtn').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.mk-vbtn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    state.view = el.dataset.view;
+    renderJeans();
+  });
+});
 
 // ── fabric canvas overlay ──
 const canvasEl = document.getElementById('mkCanvas');
@@ -186,18 +200,55 @@ function composeMockup() {
 document.getElementById('mkDownload').addEventListener('click', async () => {
   const data = await composeMockup();
   const a = document.createElement('a');
-  a.href = data; a.download = `jeans-ink-mockup-${state.type}-${state.color.key}.png`;
+  a.href = data; a.download = `jeans-ink-mockup-${state.type}-${state.color.key}-${state.view}.png`;
   a.click();
 });
 
-// ── Continue → order (Phase B will wire payment + Sheet + notification) ──
+// ── Continue → confirm → receipt (Phase B: POST to Apps Script + Telegram/Email) ──
+const typeMn = () => (state.type === 'wide' ? 'Өргөн' : 'Нарийн');
+const viewMn = () => (state.view === 'back' ? 'Хойд' : 'Урд');
+let lastMockup = null;
+let lastCode = null;
+
 document.getElementById('mkContinue').addEventListener('click', async () => {
   if (!sticker) { alert('Эхлээд наах зургаа upload хийнэ үү.'); return; }
-  const code = 'JI-' + Math.random().toString(36).slice(2, 7).toUpperCase();
-  const data = await composeMockup();
-  const a = document.createElement('a');
-  a.href = data; a.download = `jeans-ink-${code}.png`; a.click();
-  const draft = { code, type: state.type, color: state.color.label, size: state.size, price: state.price, ts: Date.now() };
+  lastMockup = await composeMockup();
+  document.getElementById('cfImg').src = lastMockup;
+  document.getElementById('cfSummary').innerHTML =
+    `Jeans: <b>${typeMn()}</b><br>Өнгө: <b>${state.color.label}</b><br>Тал: <b>${viewMn()}</b><br>Хэмжээ: <b>${state.size}</b>`;
+  document.getElementById('cfPrice').textContent = state.price.toLocaleString() + '₮';
+  // show confirm state, hide receipt
+  document.getElementById('cfConfirm').style.display = 'block';
+  document.getElementById('cfReceipt').style.display = 'none';
+  document.getElementById('cfStep').textContent = '— Баталгаажуулах';
+  document.getElementById('cfTitle').textContent = 'Захиалга';
+  window.openModal('confirmModal');
+});
+
+document.getElementById('cfConfirmBtn').addEventListener('click', () => {
+  lastCode = 'JI-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+  document.getElementById('cfCode').textContent = lastCode;
+  document.getElementById('cfImg2').src = lastMockup;
+  document.getElementById('cfMsgr').href = FB_URL;
+  // switch to receipt
+  document.getElementById('cfConfirm').style.display = 'none';
+  document.getElementById('cfReceipt').style.display = 'block';
+  document.getElementById('cfStep').textContent = '— Бүртгэгдлээ';
+  document.getElementById('cfTitle').textContent = 'Захиалга амжилттай';
+  // save draft locally (Phase B will POST this + image to Google Apps Script)
+  const draft = { code: lastCode, type: state.type, color: state.color.label, view: state.view,
+    size: state.size, price: state.price, ts: Date.now() };
   try { localStorage.setItem('ji_order_draft', JSON.stringify(draft)); } catch (e) {}
-  location.href = `order.html?code=${encodeURIComponent(code)}&type=${state.type}&color=${encodeURIComponent(state.color.label)}&size=${state.size}`;
+});
+
+document.getElementById('cfDownload').addEventListener('click', () => {
+  if (!lastMockup) return;
+  const a = document.createElement('a');
+  a.href = lastMockup; a.download = `jeans-ink-${lastCode || 'mockup'}.png`; a.click();
+});
+
+document.getElementById('cfCopy').addEventListener('click', async () => {
+  if (!lastCode) return;
+  try { await navigator.clipboard.writeText(lastCode); document.getElementById('cfCopy').textContent = '✓ Хуулсан'; }
+  catch (e) { alert('Захиалгын дугаар: ' + lastCode); }
 });
