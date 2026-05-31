@@ -180,6 +180,12 @@ document.getElementById('mkOther').addEventListener('click', () => {
   addSticker(lastSticker, other);
   setActiveSide(other);
 });
+function rotateActive(deg) {
+  const { s, o } = activeCtx(); if (!o) return;
+  o.rotate(((o.angle || 0) + deg + 360) % 360); o.setCoords(); s.canvas.renderAll();
+}
+document.getElementById('mkRotL').addEventListener('click', () => rotateActive(-15));
+document.getElementById('mkRotR').addEventListener('click', () => rotateActive(15));
 document.getElementById('mkCenter').addEventListener('click', () => {
   const { s, o } = activeCtx(); if (!o) return;
   o.set({ left: CW / 2, top: CH / 2 }); o.setCoords(); s.canvas.renderAll();
