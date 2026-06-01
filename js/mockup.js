@@ -13,7 +13,9 @@ const COLORS = [
   { key: 'black',     label: 'Хар',            swatch: '#26272B' },
 ];
 
-const FB_URL = 'https://www.facebook.com/profile.php?id=61589026276209';
+const CFG = window.JI_CONFIG || {};
+const FB_URL = CFG.FB_URL || 'https://www.facebook.com/profile.php?id=61589026276209';
+const API = CFG.JI_API || '';
 const state = { type: 'wide', color: COLORS[0], size: 'A4', price: 29000, activeSide: 'front' };
 
 // ── Stage size (two columns on desktop, stacked on mobile) ──
@@ -260,8 +262,27 @@ document.getElementById('mkContinue').addEventListener('click', async () => {
   window.openModal('confirmModal');
 });
 
-document.getElementById('cfConfirmBtn').addEventListener('click', () => {
-  lastCode = String(Math.floor(10000 + Math.random() * 90000)); // 5-digit (Phase B: Sheet ensures no repeats)
+const cfConfirmBtn = document.getElementById('cfConfirmBtn');
+cfConfirmBtn.addEventListener('click', async () => {
+  const order = { type: typeMn(), color: state.color.label, size: state.size, price: state.price };
+  let code = null;
+
+  if (API) {
+    const old = cfConfirmBtn.textContent;
+    cfConfirmBtn.textContent = 'Бүртгэж байна…'; cfConfirmBtn.disabled = true;
+    try {
+      // text/plain → preflight-гүй (CORS), Apps Script postData.contents-аар уншина
+      const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'create', ...order }) });
+      const data = await res.json();
+      if (data && data.ok && data.code) code = String(data.code);
+    } catch (e) { console.warn('backend create failed, offline fallback', e); }
+    cfConfirmBtn.textContent = old; cfConfirmBtn.disabled = false;
+  }
+
+  // Offline fallback (backend тохируулаагүй эсвэл алдаа гарвал)
+  if (!code) code = String(Math.floor(10000 + Math.random() * 90000));
+
+  lastCode = code;
   document.getElementById('cfCode').textContent = lastCode;
   document.getElementById('cfImg2').src = lastMockup;
   document.getElementById('cfMsgr').href = FB_URL;

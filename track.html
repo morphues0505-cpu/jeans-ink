@@ -247,17 +247,15 @@
   </div>
 </footer>
 
+<script src="js/config.js?v=1"></script>
 <script src="js/main.js"></script>
 <script>
-// Demo data — захиалга нэмэхдээ энд оруулна
+const API = (window.JI_CONFIG && window.JI_CONFIG.JI_API) || '';
+
+// Backend тохируулаагүй үед ажиллах demo өгөгдөл
 const DEMO_ORDERS = {
-  '28471': {
-    num: '28471', jeans: 'Wide / Цайвар цэнхэр', size: 'A4',
-    price: '29,000₮',
-    status: 1,
-    date: '2026-06-01',
-    phone: '99xx-xxxx',
-  },
+  '28471': { code: '28471', type: 'Өргөн', color: 'Цайвар цэнхэр', size: 'A4',
+    price: 29000, statusIndex: 1, date: '2026-06-01', found: true },
 };
 
 const STATUSES = [
@@ -266,42 +264,71 @@ const STATUSES = [
   { label: 'Дуусаад chatlyaa OK',    icon: '🎉' },
 ];
 
-function trackOrder() {
-  const raw = document.getElementById('trackInput').value.trim();
-  const key = raw.replace(/[^0-9]/g, '').slice(0, 5);
+// Backend идэвхтэй бол demo санамжийг нуух
+if (API) {
+  const dn = document.querySelector('.demo-notice');
+  if (dn) dn.style.display = 'none';
+}
 
-  document.getElementById('trackResult').style.display   = 'none';
-  document.getElementById('trackNotFound').style.display = 'none';
+function renderOrder(o) {
+  const idx = Math.max(0, Math.min(STATUSES.length - 1, o.statusIndex || 0));
+  const price = (typeof o.price === 'number' ? o.price : parseInt(o.price, 10) || 0).toLocaleString() + '₮';
+  const jeans = [o.type, o.color].filter(Boolean).join(' / ') || '-';
 
-  const order = DEMO_ORDERS[key];
-  if (!order) {
-    document.getElementById('notFoundNum').textContent = raw || '???';
-    document.getElementById('trackNotFound').style.display = 'block';
-    return;
-  }
-
-  // Fill result
-  document.getElementById('resultOrderNum').textContent = order.num;
-  document.getElementById('resultBadge').textContent     = STATUSES[order.status].label;
+  document.getElementById('resultOrderNum').textContent = o.code;
+  document.getElementById('resultBadge').textContent    = STATUSES[idx].label;
 
   document.getElementById('resultSummary').innerHTML = `
-    <div class="summary-row"><span class="summary-label">Jeans</span><span class="summary-value">${order.jeans}</span></div>
-    <div class="summary-row"><span class="summary-label">Хэмжээ</span><span class="summary-value">${order.size}</span></div>
-    <div class="summary-row"><span class="summary-label">Үнэ</span><span class="summary-value" style="color:var(--accent)">${order.price}</span></div>
+    <div class="summary-row"><span class="summary-label">Jeans</span><span class="summary-value">${jeans}</span></div>
+    <div class="summary-row"><span class="summary-label">Хэмжээ</span><span class="summary-value">${o.size || '-'}</span></div>
+    <div class="summary-row"><span class="summary-label">Үнэ</span><span class="summary-value" style="color:var(--accent)">${price}</span></div>
   `;
 
   document.getElementById('resultTimeline').innerHTML = STATUSES.map((s, i) => `
-    <div class="status-step ${i < order.status ? 'done' : i === order.status ? 'active' : ''}">
-      <div class="status-dot">${i <= order.status ? s.icon : ''}</div>
+    <div class="status-step ${i < idx ? 'done' : i === idx ? 'active' : ''}">
+      <div class="status-dot">${i <= idx ? s.icon : ''}</div>
       <div class="status-info">
-        <div class="status-title ${i > order.status ? 'muted' : ''}">${s.label}</div>
-        ${i < order.status ? `<div class="status-date">${order.date}</div>` : ''}
-        ${i === order.status ? `<div class="status-date" style="color:var(--accent)">Одоо ● энэ үе шатанд</div>` : ''}
+        <div class="status-title ${i > idx ? 'muted' : ''}">${s.label}</div>
+        ${i < idx ? `<div class="status-date">${o.date || ''}</div>` : ''}
+        ${i === idx ? `<div class="status-date" style="color:var(--accent)">Одоо ● энэ үе шатанд</div>` : ''}
       </div>
     </div>
   `).join('');
 
   document.getElementById('trackResult').style.display = 'block';
+}
+
+function showNotFound(raw) {
+  document.getElementById('notFoundNum').textContent = raw || '???';
+  document.getElementById('trackNotFound').style.display = 'block';
+}
+
+async function trackOrder() {
+  const raw = document.getElementById('trackInput').value.trim();
+  const key = raw.replace(/[^0-9]/g, '').slice(0, 5);
+
+  document.getElementById('trackResult').style.display   = 'none';
+  document.getElementById('trackNotFound').style.display = 'none';
+  if (!key) { showNotFound(raw); return; }
+
+  const btn = document.getElementById('trackBtn');
+
+  if (API) {
+    const old = btn.textContent; btn.textContent = 'Шалгаж байна…'; btn.disabled = true;
+    try {
+      const res = await fetch(API + '?action=track&code=' + encodeURIComponent(key));
+      const data = await res.json();
+      if (data && data.found) renderOrder(data); else showNotFound(raw);
+    } catch (e) {
+      console.warn('track failed', e); showNotFound(raw);
+    }
+    btn.textContent = old; btn.disabled = false;
+    return;
+  }
+
+  // Offline demo
+  const order = DEMO_ORDERS[key];
+  if (order) renderOrder(order); else showNotFound(raw);
 }
 
 document.getElementById('trackInput').addEventListener('keydown', e => {
