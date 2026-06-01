@@ -75,26 +75,29 @@
       display: flex; align-items: center; justify-content: space-between;
       cursor: pointer; font-weight: 500; font-size: 1rem;
     }
-    .faq-q span {
-      color: var(--accent); font-size: 1.2rem; display: inline-block;
+    .faq-q { gap: 16px; }
+    .faq-q > span:first-child { flex: 1; }            /* асуултын текст — хэвийн */
+    .faq-icon {
+      color: var(--accent); font-size: 1.4rem; line-height: 1;
+      display: inline-block; flex-shrink: 0;
       transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
     }
-    .faq-q:hover span { transform: scale(1.18); }
+    .faq-q:hover .faq-icon { transform: scale(1.18); }
     .faq-a {
       overflow: hidden; max-height: 0; opacity: 0;
-      margin-top: 0; transform: translateY(-6px) scale(.97);
+      margin-top: 0; transform: translateY(-6px) scale(.98);
       font-size: 0.9rem; color: var(--text-muted); line-height: 1.7;
-      transition: max-height .4s cubic-bezier(.22,1,.36,1),
+      transition: max-height .45s cubic-bezier(.22,1,.36,1),
                   opacity .3s ease,
                   transform .42s cubic-bezier(.34,1.56,.64,1),
                   margin-top .3s ease;
     }
     .faq-item.open .faq-a {
-      max-height: 320px; opacity: 1; margin-top: 14px;
+      max-height: 500px; opacity: 1; margin-top: 14px;
       transform: translateY(0) scale(1);
       animation: faqPop 0.45s cubic-bezier(.34,1.56,.64,1);
     }
-    .faq-item.open .faq-q span { transform: rotate(45deg) scale(1.15); }
+    .faq-item.open .faq-icon { transform: rotate(45deg) scale(1.15); }
     @keyframes faqPop {
       0%   { transform: translateY(-6px) scale(.97); }
       55%  { transform: translateY(0) scale(1.02); }
@@ -305,42 +308,42 @@
         <div class="faq-item reveal">
           <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
             <span class="mono" style="font-size:0.9rem">Patch угаахад салах уу?</span>
-            <span>+</span>
+            <span class="faq-icon">+</span>
           </div>
           <div class="faq-a">Үгүй. Heat-press технологиор бэхэлдэг учир 30°C-д урвуу талаас угаахад асуудалгүй. Уурын индүүгээр шууд индүүдэхгүй байгаарай.</div>
         </div>
         <div class="faq-item reveal reveal-delay-1">
           <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
             <span class="mono" style="font-size:0.9rem">Захиалга дуусах хугацаа</span>
-            <span>+</span>
+            <span class="faq-icon">+</span>
           </div>
           <div class="faq-a">Jeans-ээ хүлээн авснаас хойш 2–3 ажлын өдөр. Ажил дууссан тухай Messenger-ээр мэдэгдэнэ.</div>
         </div>
         <div class="faq-item reveal reveal-delay-2">
           <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
             <span class="mono" style="font-size:0.9rem">Хэдэн удаа угааж болох вэ?</span>
-            <span>+</span>
+            <span class="faq-icon">+</span>
           </div>
           <div class="faq-a">Эхний 50+ угаалтанд тэсвэртэй. Автомат болон хагас автомат угаалгын машинаар угааж болно. Гол нь угаах явцад мушгиж таталгүй (хэвлэл хагарч эвдэрнэ). Угаалгын машинаар сэгсэрч, нарны шууд тусгалаас хол газар хатаана.</div>
         </div>
         <div class="faq-item reveal reveal-delay-3">
           <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
             <span class="mono" style="font-size:0.9rem">Хуулж арилгаж болох уу?</span>
-            <span>+</span>
+            <span class="faq-icon">+</span>
           </div>
           <div class="faq-a">Тийм — тусгай бодисоор арилгадаг. Анхаар: spirt болон acetone шингэн ашиглавал jeans-ний будагт нөлөөлөх эрсдэлтэй.</div>
         </div>
         <div class="faq-item reveal reveal-delay-3">
           <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
             <span class="mono" style="font-size:0.9rem">Манай давуу тал юу вэ?</span>
-            <span>+</span>
+            <span class="faq-icon">+</span>
           </div>
           <div class="faq-a">Наасан стикерээсээ уйдвал хуулж аваад өөр стикер наах боломжтой — нэг jeans, олон дүр.</div>
         </div>
         <div class="faq-item reveal reveal-delay-4">
           <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
             <span class="mono" style="font-size:0.9rem">Хүргэлт хэр зэрэг вэ?</span>
-            <span>+</span>
+            <span class="faq-icon">+</span>
           </div>
           <div class="faq-a">УБ дотор: 10,000₮ (тогтмол). Эсвэл өөрөө ирж авах боломжтой.</div>
         </div>
