@@ -49,13 +49,14 @@ if (burger && mobileMenu) {
   });
 }
 
-// ── Active nav link ──────────────────────────
-const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+// ── Active nav link (handles /, /catalog and /catalog.html) ──
+const norm = (s) => {
+  s = (s || '').split('/').pop().replace(/\.html$/, '');
+  return (s === '' || s === 'index') ? 'index' : s;
+};
+const currentPage = norm(window.location.pathname);
 document.querySelectorAll('.nav-links a, .nav-mobile a').forEach(a => {
-  const href = a.getAttribute('href');
-  if (href === currentPage || (currentPage === '' && href === 'index.html')) {
-    a.classList.add('active');
-  }
+  if (norm(a.getAttribute('href')) === currentPage) a.classList.add('active');
 });
 
 // ── Scroll reveal ─────────────────────────────
