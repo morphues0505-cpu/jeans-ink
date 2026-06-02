@@ -107,3 +107,39 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     }
   });
 });
+
+// ── Favicon (бүх хуудсанд) ───────────────────
+(function injectFavicon() {
+  if (document.querySelector('link[rel="icon"]')) return;
+  const link = document.createElement('link');
+  link.rel = 'icon'; link.type = 'image/png'; link.href = 'assets/favicon.png?v=1';
+  document.head.appendChild(link);
+  const apple = document.createElement('link');
+  apple.rel = 'apple-touch-icon'; apple.href = 'assets/favicon.png?v=1';
+  document.head.appendChild(apple);
+})();
+
+// ── Хөвөгч Messenger товч (бүх хуудсанд) ─────
+(function floatingChat() {
+  if (!SOCIAL.facebook.enabled || !SOCIAL.facebook.url) return;
+  if (document.getElementById('floatChat')) return;
+  const style = document.createElement('style');
+  style.textContent = `
+    #floatChat{position:fixed;right:18px;bottom:18px;z-index:1500;width:58px;height:58px;border-radius:50%;
+      background:var(--accent,#C5F230);display:flex;align-items:center;justify-content:center;
+      box-shadow:0 6px 22px rgba(197,242,48,.45),0 2px 8px rgba(0,0,0,.4);
+      transition:transform .2s ease, box-shadow .2s ease;animation:fcPulse 2.6s ease-in-out infinite;}
+    #floatChat:hover{transform:scale(1.1);box-shadow:0 8px 28px rgba(197,242,48,.6);}
+    #floatChat svg{width:30px;height:30px;}
+    @keyframes fcPulse{0%,100%{box-shadow:0 6px 22px rgba(197,242,48,.35),0 2px 8px rgba(0,0,0,.4)}
+      50%{box-shadow:0 6px 30px rgba(197,242,48,.7),0 2px 8px rgba(0,0,0,.4)}}
+    @media(max-width:600px){#floatChat{right:14px;bottom:14px;width:54px;height:54px}}
+    @media(prefers-reduced-motion:reduce){#floatChat{animation:none}}`;
+  document.head.appendChild(style);
+  const a = document.createElement('a');
+  a.id = 'floatChat'; a.href = SOCIAL.facebook.url; a.target = '_blank'; a.rel = 'noopener';
+  a.title = 'Messenger-ээр бичих';
+  a.setAttribute('aria-label', 'Messenger');
+  a.innerHTML = '<svg viewBox="0 0 24 24" fill="#0D0D0D"><path d="M12 2C6.3 2 2 6.2 2 11.6c0 2.9 1.3 5.4 3.3 7.2.2.1.3.4.3.6l.1 1.8c0 .6.6 1 1.1.7l2-.9c.2-.1.4-.1.6 0 .9.3 1.9.4 2.9.4 5.7 0 10-4.2 10-9.6S17.7 2 12 2zm6 7.5l-2.9 4.6c-.5.7-1.5.9-2.2.4l-2.3-1.7c-.2-.2-.5-.2-.7 0l-3.1 2.4c-.4.3-.9-.2-.7-.6l2.9-4.6c.5-.7 1.5-.9 2.2-.4l2.3 1.7c.2.2.5.2.7 0l3.1-2.4c.4-.3.9.2.7.6z"/></svg>';
+  document.body.appendChild(a);
+})();
