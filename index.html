@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0D0D0D">
   <title>JEANS INK — Premium Jeans Patch | UB</title>
   <meta name="description" content="Limited edition jeans patches. Hand-applied. Made in Ulaanbaatar.">
-  <link rel="stylesheet" href="css/style.css?v=14">
+  <link rel="stylesheet" href="css/style.css?v=15">
   <style>
     /* Home-specific extras */
     .featured-strip {
@@ -147,8 +147,29 @@
     @media (max-width:600px) {
       .hero-bg-img::before { background-image:url('assets/hero-mobile.webp?v=2'); filter: blur(2px) brightness(0.55) saturate(1.12); }
     }
+    /* ── Hero glitch on "Never the same." ── */
+    .hero-glitch { position:relative; display:inline-block; }
+    .hero-glitch::before, .hero-glitch::after {
+      content:attr(data-text); position:absolute; left:0; top:0; width:100%;
+      pointer-events:none;
+    }
+    .hero-glitch::before { color:#C5F230; animation:glitchTop 4s infinite steps(2,end); }
+    .hero-glitch::after { color:#ff2e63; animation:glitchBot 3.4s infinite steps(2,end); mix-blend-mode:screen; }
+    @keyframes glitchTop {
+      0%,90%,100%{ clip-path:inset(0 0 100% 0); transform:translate(0); }
+      91%{ clip-path:inset(0 0 58% 0); transform:translate(-3px,-2px); }
+      94%{ clip-path:inset(0 0 38% 0); transform:translate(3px,1px); }
+      97%{ clip-path:inset(0 0 70% 0); transform:translate(-2px,1px); }
+    }
+    @keyframes glitchBot {
+      0%,88%,100%{ clip-path:inset(100% 0 0 0); transform:translate(0); }
+      89%{ clip-path:inset(62% 0 0 0); transform:translate(3px,2px); }
+      93%{ clip-path:inset(45% 0 0 0); transform:translate(-3px,-1px); }
+      96%{ clip-path:inset(75% 0 0 0); transform:translate(2px,2px); }
+    }
     @media (prefers-reduced-motion: reduce) {
       .hero-bg-img::before, .hero-bg-img .hero-glow { animation:none; }
+      .hero-glitch::before, .hero-glitch::after { animation:none; content:none; }
     }
   </style>
 </head>
@@ -193,7 +214,7 @@
 
       <h1 class="hero-title">
         Your jeans.<br>
-        <em>Never the same.</em>
+        <em class="hero-glitch" data-text="Never the same.">Never the same.</em>
       </h1>
 
       <p class="hero-sub">
@@ -450,6 +471,6 @@
   </div>
 </footer>
 
-<script src="js/main.js?v=2"></script>
+<script src="js/main.js?v=3"></script>
 </body>
 </html>

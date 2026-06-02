@@ -379,6 +379,30 @@ h4 { font-weight: 700; letter-spacing: -0.01em; }
 .reveal-delay-3 { transition-delay: 0.24s; }
 .reveal-delay-4 { transition-delay: 0.32s; }
 
+/* ── Button shine sweep (hover) ── */
+.btn { position: relative; overflow: hidden; }
+.btn::after {
+  content: ''; position: absolute; top: 0; left: -130%; width: 55%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
+  transform: skewX(-20deg); pointer-events: none;
+}
+.btn:hover::after { left: 140%; transition: left 0.6s ease; }
+
+/* ── Page transition (fade out on navigate) ── */
+body { transition: opacity 0.22s ease; }
+body.leaving { opacity: 0; }
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: pgFadeOut 0.22s ease both; }
+::view-transition-new(root) { animation: pgFadeIn 0.34s ease both; }
+@keyframes pgFadeOut { to { opacity: 0; } }
+@keyframes pgFadeIn { from { opacity: 0; } }
+
+/* ── Reduced motion guard ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  body.leaving { opacity: 1; }
+}
+
 /* ============================================
    UTILITIES
    ============================================ */

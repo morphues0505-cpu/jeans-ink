@@ -61,10 +61,34 @@ document.querySelectorAll('.nav-links a, .nav-mobile a').forEach(a => {
 
 // ── Scroll reveal ─────────────────────────────
 const revealObserver = new IntersectionObserver(
-  (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
-  { threshold: 0.12 }
+  (entries) => entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+  }),
+  { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
 );
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+// auto-stagger direct children of [data-stagger]
+document.querySelectorAll('[data-stagger] > *').forEach((el, i) => {
+  el.classList.add('reveal');
+  el.style.transitionDelay = (i % 6) * 0.08 + 's';
+  revealObserver.observe(el);
+});
+
+// ── Page transition: fade out before navigating ──
+(function pageTransitions() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('a[href]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const href = a.getAttribute('href') || '';
+      if (a.target === '_blank' || a.hasAttribute('download') || href.startsWith('#') ||
+          href.startsWith('http') && !href.includes(location.host) || href.startsWith('mailto') || href.startsWith('tel')) return;
+      if (!href.endsWith('.html') && href !== '/' && !href.endsWith('/')) return;
+      e.preventDefault();
+      document.body.classList.add('leaving');
+      setTimeout(() => { location.href = a.href; }, 200);
+    });
+  });
+})();
 
 // ── Modal ────────────────────────────────────
 window.openModal = function(id) {
