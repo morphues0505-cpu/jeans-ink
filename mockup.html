@@ -101,6 +101,8 @@
 
     .mk-note{ font-family:'Montserrat',monospace; font-size:.68rem; color:var(--text-dim); line-height:1.6; margin-top:6px; }
     /* ready-sticker tray */
+    .mk-tray-box{ margin-top:16px; padding:16px; border:1px solid var(--border); border-radius:12px; background:var(--bg-2); }
+    .mk-tray-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
     .mk-tray{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
     .mk-tray-item{ position:relative; aspect-ratio:1; background:#FEF9F5; border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; padding:6px; cursor:pointer; transition:transform .15s, border-color .2s; }
     .mk-tray-item:hover{ border-color:var(--accent); transform:translateY(-2px); }
@@ -186,15 +188,6 @@
         </div>
       </div>
 
-      <!-- Step: ready sticker tray -->
-      <div class="mk-step">
-        <div class="mk-step-head"><span class="mk-step-num">★</span><span class="mk-step-title">Бэлэн наалт</span></div>
-        <div class="mk-step-body">
-          <div class="mk-tray" id="mkTray"></div>
-          <p class="mk-note" id="mkTrayHint">Доорх наалт дээр дарж, идэвхтэй (сонгосон) тал дээрээ нэм. Дээр зургаа upload хийвэл бас энд нэмэгдэнэ.</p>
-        </div>
-      </div>
-
       <!-- Step 4: size -->
       <div class="mk-step">
         <div class="mk-step-head"><span class="mk-step-num">4</span><span class="mk-step-title">Хэмжээ</span></div>
@@ -243,6 +236,13 @@
             <div class="mk-empty" id="mkEmptyBack">Хойд тал</div>
           </div>
         </div>
+      </div>
+
+      <!-- ready sticker tray — jeans-ний яг доор -->
+      <div class="mk-tray-box">
+        <div class="mk-tray-head"><span class="mk-step-num">★</span><span class="mk-step-title">Бэлэн наалт</span></div>
+        <div class="mk-tray" id="mkTray"></div>
+        <p class="mk-note" id="mkTrayHint">Наалт дээр дарж, идэвхтэй (сонгосон) тал дээрээ нэмнэ. Дээр зургаа upload хийвэл бас энд орно.</p>
       </div>
 
       <div class="mk-toolbar">
