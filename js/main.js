@@ -168,3 +168,51 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.innerHTML = '<svg viewBox="0 0 24 24" fill="#0D0D0D"><path d="M12 2C6.3 2 2 6.2 2 11.6c0 2.9 1.3 5.4 3.3 7.2.2.1.3.4.3.6l.1 1.8c0 .6.6 1 1.1.7l2-.9c.2-.1.4-.1.6 0 .9.3 1.9.4 2.9.4 5.7 0 10-4.2 10-9.6S17.7 2 12 2zm6 7.5l-2.9 4.6c-.5.7-1.5.9-2.2.4l-2.3-1.7c-.2-.2-.5-.2-.7 0l-3.1 2.4c-.4.3-.9-.2-.7-.6l2.9-4.6c.5-.7 1.5-.9 2.2-.4l2.3 1.7c.2.2.5.2.7 0l3.1-2.4c.4-.3.9.2.7.6z"/></svg>';
   document.body.appendChild(a);
 })();
+
+// ── Neon cursor + meteor trail (desktop only) ──
+(function neonCursor() {
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const style = document.createElement('style');
+  style.textContent = `
+    html.neon-cur, html.neon-cur * { cursor: none !important; }
+    .cur-dot, .cur-ring { position:fixed; top:0; left:0; pointer-events:none; z-index:99999;
+      border-radius:50%; transform:translate(-50%,-50%); will-change:left,top; }
+    .cur-dot { width:8px; height:8px; background:#C5F230; box-shadow:0 0 12px #C5F230, 0 0 4px #C5F230; }
+    .cur-ring { width:32px; height:32px; border:1.5px solid rgba(197,242,48,.55);
+      transition:width .18s ease, height .18s ease, background .18s ease, border-color .18s ease; }
+    .cur-ring.big { width:54px; height:54px; background:rgba(197,242,48,.12); border-color:rgba(197,242,48,.9); }
+    .cur-trail { position:fixed; top:0; left:0; width:7px; height:7px; border-radius:50%;
+      background:#C5F230; pointer-events:none; z-index:99998; transform:translate(-50%,-50%);
+      box-shadow:0 0 8px #C5F230; animation:curTrail .6s ease forwards; }
+    @keyframes curTrail { from{opacity:.85; transform:translate(-50%,-50%) scale(1)}
+      to{opacity:0; transform:translate(-50%,-50%) scale(.15)} }`;
+  document.head.appendChild(style);
+  document.documentElement.classList.add('neon-cur');
+  const dot = document.createElement('div'); dot.className = 'cur-dot';
+  const ring = document.createElement('div'); ring.className = 'cur-ring';
+  document.body.append(dot, ring);
+  let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my, last = 0;
+  addEventListener('mousemove', (e) => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    const now = e.timeStamp;
+    if (now - last > 26) {
+      last = now;
+      const t = document.createElement('div'); t.className = 'cur-trail';
+      t.style.left = mx + 'px'; t.style.top = my + 'px';
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 600);
+    }
+  });
+  (function loop() {
+    rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(loop);
+  })();
+  const hot = 'a,button,.btn,.mk-type,.mk-color,.mk-size,.pat-tile,.mk-tray-item,.faq-q,.mk-zoom-btn,.mk-vbtn';
+  addEventListener('mouseover', (e) => { if (e.target.closest(hot)) ring.classList.add('big'); });
+  addEventListener('mouseout',  (e) => { if (e.target.closest(hot)) ring.classList.remove('big'); });
+  addEventListener('mouseleave', () => { dot.style.opacity = ring.style.opacity = '0'; });
+  addEventListener('mouseenter', () => { dot.style.opacity = ring.style.opacity = '1'; });
+})();
