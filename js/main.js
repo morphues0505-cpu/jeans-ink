@@ -6,7 +6,7 @@
    IG нээгдсэн үед instagram-д линкээ тавиад
    enabled: true болгоно. Болоо.            */
 const SOCIAL = {
-  facebook:  { url: 'https://www.facebook.com/profile.php?id=61589026276209', enabled: true },
+  facebook:  { url: 'https://m.me/1158158530715843', enabled: true },
   instagram: { url: '', enabled: false },
 };
 
