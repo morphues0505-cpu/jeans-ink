@@ -47,7 +47,7 @@
     .mk-color.active{ border-color:var(--accent); }
 
     /* upload */
-    .mk-upload { border:1px dashed var(--border-2); padding:24px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; }
+    .mk-upload { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; box-sizing:border-box; border:2px dashed var(--border-2); border-radius:12px; padding:30px 18px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; }
     .mk-upload:hover{ border-color:var(--accent); background:var(--accent-dim); }
     .mk-upload svg{ width:30px; height:30px; color:var(--text-muted); margin-bottom:10px; }
     .mk-upload p{ font-family:'Montserrat',monospace; font-size:.74rem; color:var(--text-muted); line-height:1.6; }
@@ -177,12 +177,12 @@
         <div class="mk-step-body">
           <label class="mk-upload" id="mkUpload">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-            <p>Зураг сонгох<br><span style="color:var(--text-dim)">PNG / JPG · дэвсгэр автоматаар арилна</span></p>
+            <p>Наах зургаа сонгох<br><span style="color:var(--text-dim)">PNG / JPG · AI дэвсгэрийг автоматаар арилгана</span></p>
             <input type="file" id="mkFile" accept="image/*">
           </label>
           <div class="mk-status" id="mkStatus">AI дэвсгэр арилгаж байна…</div>
           <div class="mk-bar" id="mkBar"><i id="mkBarFill"></i></div>
-          <p class="mk-note">Анх удаа ~1 удаа AI model татна (хэдэн арван MB). Дараа нь хурдан.</p>
+          <p class="mk-note">Эхний удаад AI бэлдэхэд хэдхэн хором хүлээнэ (нэг л удаа). Дараа нь шуурхай ажиллана.</p>
         </div>
       </div>
 
