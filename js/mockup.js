@@ -46,7 +46,7 @@ function buildSide(side) {
   jeansHost.appendChild(miss);
 
   canvasEl.width = CW; canvasEl.height = CH;
-  const canvas = new fabric.Canvas(canvasEl, { backgroundColor: 'transparent', preserveObjectStacking: true });
+  const canvas = new fabric.Canvas(canvasEl, { backgroundColor: 'transparent', preserveObjectStacking: true, allowTouchScrolling: true });
   canvas.setWidth(CW); canvas.setHeight(CH);
 
   const s = { side, stageEl, baseImg, miss, emptyEl, canvas, sticker: null };

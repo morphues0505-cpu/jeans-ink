@@ -94,7 +94,12 @@
     .mk-col-label{ font-family:'Montserrat',sans-serif; font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); }
     .mk-stage-col .mk-stage{ width:100%; }
     .mk-stage.sel{ outline:2px solid var(--accent); outline-offset:2px; }
-    @media(max-width:600px){ .mk-stages{ flex-direction:column; align-items:center; } .mk-stage-col{ width:100%; max-width:380px; } }
+    @media(max-width:600px){
+      .mk-stage-wrap{ position:static; top:auto; }
+      .mk-stages{ flex-direction:column; align-items:center; gap:34px; }
+      .mk-stage-col{ width:100%; max-width:380px; }
+      .mk-stage-col + .mk-stage-col{ padding-top:26px; border-top:1px dashed var(--border); }
+    }
     .mk-toolbar{ display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
     .mk-tool{ font-family:'Montserrat',monospace; font-size:.68rem; letter-spacing:.05em; text-transform:uppercase; padding:8px 14px; border:1px solid var(--border-2); background:var(--bg-2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
     .mk-tool:hover{ border-color:var(--accent); color:var(--accent); }
@@ -314,6 +319,6 @@
 
 <script src="js/main.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/mockup.js?v=13" type="module"></script>
+<script src="js/mockup.js?v=14" type="module"></script>
 </body>
 </html>
