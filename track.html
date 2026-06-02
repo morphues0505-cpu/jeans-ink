@@ -266,7 +266,7 @@ const API = (window.JI_CONFIG && window.JI_CONFIG.JI_API) || '';
 // Backend тохируулаагүй үед ажиллах demo өгөгдөл
 const DEMO_ORDERS = {
   '28471': { code: '28471', type: 'Өргөн', color: 'Цайвар цэнхэр', size: 'A4',
-    price: 29000, statusIndex: 1, date: '2026-06-01', found: true },
+    price: 29000, statusIndex: 1, state: 'active', date: '2026-06-01', found: true },
 };
 
 const STATUSES = [
@@ -287,7 +287,6 @@ function renderOrder(o) {
   const jeans = [o.type, o.color].filter(Boolean).join(' / ') || '-';
 
   document.getElementById('resultOrderNum').textContent = o.code;
-  document.getElementById('resultBadge').textContent    = STATUSES[idx].label;
 
   document.getElementById('resultSummary').innerHTML = `
     <div class="summary-row"><span class="summary-label">Jeans</span><span class="summary-value">${jeans}</span></div>
@@ -295,7 +294,41 @@ function renderOrder(o) {
     <div class="summary-row"><span class="summary-label">Үнэ</span><span class="summary-value" style="color:var(--accent)">${price}</span></div>
   `;
 
-  document.getElementById('resultTimeline').innerHTML = STATUSES.map((s, i) => `
+  const badge = document.getElementById('resultBadge');
+  const timeline = document.getElementById('resultTimeline');
+
+  // ── Хүлээгдэж буй (онлайн захиалсан, өмд аваагүй) ──
+  if (o.state === 'pending') {
+    badge.textContent = '🕐 Хүлээгдэж буй';
+    timeline.innerHTML = `
+      <div style="border:1px solid var(--accent);background:var(--accent-dim);border-radius:8px;padding:18px 16px">
+        <p class="mono" style="font-size:.84rem;line-height:1.7;color:var(--text)">
+          ⏳ Таны захиалга <b>хүлээгдэж байна</b>.<br>
+          <b>24 цагийн дотор</b> jeans-ээ авчирч өгснөөр захиалга баталгаажна.
+          Эс бөгөөс энэ дугаар <b>цуцлагдана</b>.
+        </p>
+      </div>`;
+    document.getElementById('trackResult').style.display = 'block';
+    return;
+  }
+
+  // ── Цуцлагдсан ──
+  if (o.state === 'cancelled') {
+    badge.textContent = '❌ Цуцлагдсан';
+    timeline.innerHTML = `
+      <div style="border:1px solid #FF5A3C;background:rgba(255,90,60,.1);border-radius:8px;padding:18px 16px">
+        <p class="mono" style="font-size:.84rem;line-height:1.7;color:var(--text)">
+          Энэ захиалга <b>цуцлагдсан</b> (24 цагт баталгаажаагүй).<br>
+          Дахин захиалахыг хүсвэл шинээр Try On хийгээрэй.
+        </p>
+      </div>`;
+    document.getElementById('trackResult').style.display = 'block';
+    return;
+  }
+
+  // ── Идэвхтэй (3 үе шат) ──
+  badge.textContent = STATUSES[idx].label;
+  timeline.innerHTML = STATUSES.map((s, i) => `
     <div class="status-step ${i < idx ? 'done' : i === idx ? 'active' : ''}">
       <div class="status-dot">${i <= idx ? s.icon : ''}</div>
       <div class="status-info">
