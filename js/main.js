@@ -74,18 +74,33 @@ document.querySelectorAll('[data-stagger] > *').forEach((el, i) => {
   revealObserver.observe(el);
 });
 
-// ── Page transition: fade out before navigating ──
+// ── Page transition: neon wipe panel sweeps up before navigating ──
 (function pageTransitions() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const style = document.createElement('style');
+  style.textContent = `
+    #pageWipe{position:fixed;inset:0;z-index:99990;background:#0D0D0D;transform:translateY(105%);
+      transition:transform .46s cubic-bezier(.76,0,.24,1);display:flex;align-items:center;justify-content:center;
+      border-top:3px solid #C5F230;box-shadow:0 -10px 40px rgba(197,242,48,.35);}
+    #pageWipe img{width:66px;height:66px;opacity:0;transform:scale(.7) rotate(-10deg);
+      transition:opacity .24s ease .12s, transform .4s cubic-bezier(.34,1.56,.64,1) .12s;
+      filter:drop-shadow(0 0 16px rgba(197,242,48,.7));}
+    #pageWipe.cover{transform:translateY(0);}
+    #pageWipe.cover img{opacity:1;transform:scale(1) rotate(0);}`;
+  document.head.appendChild(style);
+  const w = document.createElement('div'); w.id = 'pageWipe';
+  w.innerHTML = '<img src="assets/logo-nav.png" alt="">';
+  document.body.appendChild(w);
   document.querySelectorAll('a[href]').forEach(a => {
     a.addEventListener('click', (e) => {
       const href = a.getAttribute('href') || '';
       if (a.target === '_blank' || a.hasAttribute('download') || href.startsWith('#') ||
-          href.startsWith('http') && !href.includes(location.host) || href.startsWith('mailto') || href.startsWith('tel')) return;
+          href.startsWith('mailto') || href.startsWith('tel')) return;
+      if (href.startsWith('http') && !href.includes(location.host)) return;
       if (!href.endsWith('.html') && href !== '/' && !href.endsWith('/')) return;
       e.preventDefault();
-      document.body.classList.add('leaving');
-      setTimeout(() => { location.href = a.href; }, 200);
+      w.classList.add('cover');
+      setTimeout(() => { location.href = a.href; }, 450);
     });
   });
 })();
