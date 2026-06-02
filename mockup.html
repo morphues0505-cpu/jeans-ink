@@ -70,7 +70,7 @@
 
     /* canvas stage */
     .mk-stage-wrap{ position:sticky; top:calc(var(--nav-h) + 24px); }
-    .mk-stage{ position:relative; margin:0 auto; background:var(--bg-2); border:1px solid var(--border); }
+    .mk-stage{ position:relative; margin:0 auto; background:var(--bg-2); border:1px solid var(--border); -webkit-user-select:none; user-select:none; }
     .mk-jeans{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
     .mk-jeans svg{ width:100%; height:100%; display:block; }
     .mk-canvas{ position:absolute; inset:0; }
@@ -319,6 +319,6 @@
 
 <script src="js/main.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/mockup.js?v=14" type="module"></script>
+<script src="js/mockup.js?v=15" type="module"></script>
 </body>
 </html>
