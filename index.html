@@ -147,25 +147,39 @@
     @media (max-width:600px) {
       .hero-bg-img::before { background-image:url('assets/hero-mobile.webp?v=2'); filter: blur(2px) brightness(0.55) saturate(1.12); }
     }
-    /* ── Hero glitch on "Never the same." ── */
-    .hero-glitch { position:relative; display:inline-block; }
+    /* ── Hero glitch on "Never the same." (intense) ── */
+    .hero-glitch { position:relative; display:inline-block;
+      text-shadow: 2px 0 rgba(255,46,99,.55), -2px 0 rgba(0,200,255,.45);
+      animation: glitchFlick 3.2s infinite steps(1); }
     .hero-glitch::before, .hero-glitch::after {
-      content:attr(data-text); position:absolute; left:0; top:0; width:100%;
-      pointer-events:none;
+      content:attr(data-text); position:absolute; left:0; top:0; width:100%; pointer-events:none;
     }
-    .hero-glitch::before { color:#C5F230; animation:glitchTop 4s infinite steps(2,end); }
-    .hero-glitch::after { color:#ff2e63; animation:glitchBot 3.4s infinite steps(2,end); mix-blend-mode:screen; }
-    @keyframes glitchTop {
-      0%,90%,100%{ clip-path:inset(0 0 100% 0); transform:translate(0); }
-      91%{ clip-path:inset(0 0 58% 0); transform:translate(-3px,-2px); }
-      94%{ clip-path:inset(0 0 38% 0); transform:translate(3px,1px); }
-      97%{ clip-path:inset(0 0 70% 0); transform:translate(-2px,1px); }
+    .hero-glitch::before { color:#C5F230; animation:glitchA 1.9s infinite linear alternate; }
+    .hero-glitch::after  { color:#ff2e63; animation:glitchB 1.5s infinite linear alternate; mix-blend-mode:screen; }
+    @keyframes glitchA {
+      0%   { clip-path:inset(8% 0 82% 0);  transform:translate(-3px,-1px); }
+      15%  { clip-path:inset(48% 0 30% 0); transform:translate(3px,1px); }
+      30%  { clip-path:inset(20% 0 60% 0); transform:translate(-4px,0); }
+      45%  { clip-path:inset(70% 0 8% 0);  transform:translate(2px,-1px); }
+      60%  { clip-path:inset(34% 0 50% 0); transform:translate(-2px,2px); }
+      75%  { clip-path:inset(12% 0 74% 0); transform:translate(4px,-1px); }
+      90%  { clip-path:inset(58% 0 24% 0); transform:translate(-3px,1px); }
+      100% { clip-path:inset(26% 0 56% 0); transform:translate(2px,0); }
     }
-    @keyframes glitchBot {
-      0%,88%,100%{ clip-path:inset(100% 0 0 0); transform:translate(0); }
-      89%{ clip-path:inset(62% 0 0 0); transform:translate(3px,2px); }
-      93%{ clip-path:inset(45% 0 0 0); transform:translate(-3px,-1px); }
-      96%{ clip-path:inset(75% 0 0 0); transform:translate(2px,2px); }
+    @keyframes glitchB {
+      0%   { clip-path:inset(80% 0 6% 0);  transform:translate(3px,1px); }
+      18%  { clip-path:inset(22% 0 60% 0); transform:translate(-3px,-1px); }
+      36%  { clip-path:inset(56% 0 30% 0); transform:translate(4px,1px); }
+      54%  { clip-path:inset(10% 0 78% 0); transform:translate(-2px,2px); }
+      72%  { clip-path:inset(64% 0 18% 0); transform:translate(3px,-2px); }
+      90%  { clip-path:inset(34% 0 48% 0); transform:translate(-4px,1px); }
+      100% { clip-path:inset(48% 0 36% 0); transform:translate(2px,1px); }
+    }
+    @keyframes glitchFlick {
+      0%,7%,9%,100% { opacity:1; }
+      8%  { opacity:.72; }
+      52% { opacity:1; }
+      53% { opacity:.85; }
     }
     @media (prefers-reduced-motion: reduce) {
       .hero-bg-img::before, .hero-bg-img .hero-glow { animation:none; }
