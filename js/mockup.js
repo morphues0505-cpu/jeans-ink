@@ -244,6 +244,17 @@ document.getElementById('mkDownload').addEventListener('click', async () => {
   a.href = data; a.download = `jeans-ink-mockup-${state.type}-${state.color.key}.png`; a.click();
 });
 
+// ── Zoom lightbox (өмдөө том харах) ──
+const zoomBox = document.getElementById('mkZoomBox');
+document.getElementById('mkZoom').addEventListener('click', async () => {
+  document.getElementById('mkZoomImg').src = await composeMockup();
+  zoomBox.classList.add('open');
+});
+function closeZoom() { zoomBox.classList.remove('open'); }
+document.getElementById('mkZoomClose').addEventListener('click', closeZoom);
+zoomBox.addEventListener('click', (e) => { if (e.target === zoomBox) closeZoom(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeZoom(); });
+
 // ── Continue → confirm → receipt ──
 const typeMn = () => (state.type === 'wide' ? 'Өргөн' : 'Нарийн');
 
