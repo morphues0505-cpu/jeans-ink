@@ -81,10 +81,10 @@
     <div class="ad-row" id="adActions" style="display:none">
       <input class="ad-input" id="adId" placeholder="ID (жнь p31)" style="width:130px">
       <input class="ad-input" id="adName" placeholder="Нэр (жнь Flame 2)" style="width:170px">
-      <button class="btn btn-outline" id="adDownload">PNG татах</button>
+      <button class="btn btn-outline" id="adDownload">WEBP татах</button>
       <button class="btn btn-primary" id="adAddList">＋ Жагсаалтад нэмэх</button>
     </div>
-    <p class="ad-note" style="margin-top:12px;color:var(--text-dim)">PNG татаад <b>assets/patterns/</b>-д хийнэ. ID нь файлын нэртэй ижил байх ёстой (p31 → p31.png).</p>
+    <p class="ad-note" style="margin-top:12px;color:var(--text-dim)">WEBP татаад <b>assets/patterns/</b>-д хийнэ. ID нь файлын нэртэй ижил байх ёстой (p31 → p31.webp).</p>
   </div>
 
   <!-- MANAGE -->
@@ -136,7 +136,7 @@ const exportEl = document.getElementById('adExport');
 function renderManage() {
   manageEl.innerHTML = work.flatMap(g => g.items.map(it => `
     <div class="ad-mtile" data-id="${it.id}">
-      <img src="assets/patterns/${it.id}.png?v=2" alt="${it.name}">
+      <img src="assets/patterns/${it.id}.webp?v=3" alt="${it.name}">
       <span class="lbl">${it.id}</span>
       <button class="rm" data-id="${it.id}" title="Хасах">✕</button>
     </div>`)).join('');
@@ -190,7 +190,17 @@ fileInput.addEventListener('change', async (e) => {
 document.getElementById('adDownload').addEventListener('click', () => {
   if (!blobUrl) return;
   const id = (document.getElementById('adId').value.trim() || 'pattern').replace(/[^a-z0-9_-]/gi,'');
-  const a = document.createElement('a'); a.href = blobUrl; a.download = id + '.png'; a.click();
+  // PNG blob-ийг webp болгож татах (сайт webp ашигладаг)
+  const im = new Image();
+  im.onload = () => {
+    const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+    c.getContext('2d').drawImage(im, 0, 0);
+    c.toBlob(b => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b); a.download = id + '.webp'; a.click();
+    }, 'image/webp', 0.85);
+  };
+  im.src = blobUrl;
 });
 document.getElementById('adAddList').addEventListener('click', () => {
   const id = (document.getElementById('adId').value.trim()).replace(/[^a-z0-9_-]/gi,'');
@@ -199,7 +209,7 @@ document.getElementById('adAddList').addEventListener('click', () => {
   if (work.flatMap(g => g.items).some(i => i.id === id)) { alert('Энэ ID аль хэдийн байна'); return; }
   ensureCustom().items.push({ id, name });
   renderManage(); buildExport();
-  alert(`"${id}" жагсаалтад нэмэгдлээ.\nСанамж: ${id}.png-г татаж assets/patterns/-д хийгээд, Export-оо commit хий.`);
+  alert(`"${id}" жагсаалтад нэмэгдлээ.\nСанамж: ${id}.webp-г татаж assets/patterns/-д хийгээд, Export-оо commit хий.`);
 });
 
 // ── Export actions ──
