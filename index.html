@@ -143,6 +143,10 @@
     }
     @keyframes heroGlow { 0%,100%{ opacity:.45 } 50%{ opacity:.9 } }
     .hero-bg-grid { z-index:0; }
+    /* Утсанд босоо crop ашиглах */
+    @media (max-width:600px) {
+      .hero-bg-img::before { background-image:url('assets/hero-mobile.jpg?v=1'); filter: blur(2px) brightness(0.55) saturate(1.12); }
+    }
     @media (prefers-reduced-motion: reduce) {
       .hero-bg-img::before, .hero-bg-img .hero-glow { animation:none; }
     }
