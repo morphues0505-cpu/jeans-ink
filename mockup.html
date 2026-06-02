@@ -106,6 +106,10 @@
 
     .mk-note{ font-family:'Montserrat',monospace; font-size:.68rem; color:var(--text-dim); line-height:1.6; margin-top:6px; }
     /* ready-sticker tray */
+    .mk-zoom-btn{ position:absolute; bottom:8px; right:8px; z-index:5; width:38px; height:38px; border-radius:50%;
+      background:rgba(13,13,13,.72); border:1px solid var(--accent); color:var(--accent); font-size:1rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px); transition:transform .15s, background .2s; }
+    .mk-zoom-btn:hover{ transform:scale(1.12); background:var(--accent); }
     .mk-zoom-box{ position:fixed; inset:0; z-index:2500; background:rgba(0,0,0,.93); display:none; align-items:center; justify-content:center; padding:18px; }
     .mk-zoom-box.open{ display:flex; }
     .mk-zoom-box img{ max-width:96vw; max-height:88vh; object-fit:contain; border-radius:8px; }
@@ -235,6 +239,7 @@
             <div class="mk-jeans" id="mkJeansFront"></div>
             <canvas class="mk-canvas" id="mkCanvasFront"></canvas>
             <div class="mk-empty" id="mkEmptyFront">Урд тал</div>
+            <button class="mk-zoom-btn" data-side="front" title="Томруулж харах" aria-label="Томруулах">🔍</button>
           </div>
         </div>
         <div class="mk-stage-col">
@@ -243,6 +248,7 @@
             <div class="mk-jeans" id="mkJeansBack"></div>
             <canvas class="mk-canvas" id="mkCanvasBack"></canvas>
             <div class="mk-empty" id="mkEmptyBack">Хойд тал</div>
+            <button class="mk-zoom-btn" data-side="back" title="Томруулж харах" aria-label="Томруулах">🔍</button>
           </div>
         </div>
       </div>
@@ -262,8 +268,7 @@
         <button class="mk-tool" id="mkFlip">Толин эргүүлэх</button>
         <button class="mk-tool" id="mkDelete">Устгах</button>
       </div>
-      <p class="mk-hint">Тал сонгоод зургаа upload хий · булангаас барьж томруулна · чирж байрлуулна</p>
-      <button class="btn btn-outline" id="mkZoom" style="width:100%;margin-top:12px;justify-content:center">🔍 Томруулж харах</button>
+      <p class="mk-hint">Тал сонгоод зургаа upload хий · булангаас барьж томруулна · чирж байрлуулна · 🔍 товчоор томруулж хар</p>
     </div>
   </div>
 </div>
@@ -330,6 +335,6 @@
 
 <script src="js/main.js"></script>
 <script src="js/config.js?v=2"></script>
-<script src="js/mockup.js?v=17" type="module"></script>
+<script src="js/mockup.js?v=18" type="module"></script>
 </body>
 </html>

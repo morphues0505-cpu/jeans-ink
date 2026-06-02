@@ -244,11 +244,23 @@ document.getElementById('mkDownload').addEventListener('click', async () => {
   a.href = data; a.download = `jeans-ink-mockup-${state.type}-${state.color.key}.png`; a.click();
 });
 
-// ── Zoom lightbox (өмдөө том харах) ──
+// ── Zoom lightbox (тал бүрийг том харах) ──
+function composeSide(side) {
+  const scale = 2, s = sides[side];
+  const out = document.createElement('canvas');
+  out.width = CW * scale; out.height = CH * scale;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#0D0D0D'; ctx.fillRect(0, 0, out.width, out.height);
+  drawSide(ctx, s, 0, scale);
+  return out.toDataURL('image/png');
+}
 const zoomBox = document.getElementById('mkZoomBox');
-document.getElementById('mkZoom').addEventListener('click', async () => {
-  document.getElementById('mkZoomImg').src = await composeMockup();
-  zoomBox.classList.add('open');
+document.querySelectorAll('.mk-zoom-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('mkZoomImg').src = composeSide(btn.dataset.side);
+    zoomBox.classList.add('open');
+  });
 });
 function closeZoom() { zoomBox.classList.remove('open'); }
 document.getElementById('mkZoomClose').addEventListener('click', closeZoom);
