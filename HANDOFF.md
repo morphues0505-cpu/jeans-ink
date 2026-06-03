@@ -11,7 +11,7 @@
 - **Repo / working dir:** `D:\@NKHA\JEANS-INK\JEANS-INK-WEB`
 - **Git remote:** `github.com/morphues0505-cpu/jeans-ink`, branch **`master`**
 - **Git author:** name `morphues0505-cpu`, email `254476816+morphues0505-cpu@users.noreply.github.com`
-- **Live (primary, clean):** https://jeans-ink-mn.netlify.app/
+- **Live (primary, clean):** https://jeans-ink.pages.dev/
 - **Live (mirror):** https://morphues0505-cpu.github.io/jeans-ink/
 - **DEPLOY = just `git push` to master.** Netlify **and** GitHub Pages both auto-deploy in ~1–2 min. No build step (static site).
 - **Marketing files (NOT in repo):** `D:\@NKHA\JEANS-INK\MARKETING\` — `JEANS-INK-Content-Calendar.xlsx`, `JEANS-INK-Design-Guide.xlsx`, `build_*.py`.
