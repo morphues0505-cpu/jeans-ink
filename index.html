@@ -149,10 +149,11 @@
     @media (max-width:600px) {
       .hero-bg-img::before { background-image:url('assets/tete.webp?v=2'); filter: blur(2px) brightness(0.9) saturate(1.22); }
     }
-    /* keep each headline line on a single row + size to fit mobile */
-    .hero-title { font-size: clamp(2.6rem, 11.6vw, 8rem); letter-spacing:-0.045em; }
+    /* keep each headline line on a single row + size to fill mobile width */
+    .hero-title { font-size: clamp(2.6rem, 12.2vw, 8rem); letter-spacing:-0.05em;
+      white-space:nowrap; word-break:keep-all; overflow-wrap:normal; }
     .hero-title .hl1 { white-space:nowrap; display:inline-block; }
-    .hero-glitch { font-size:1.1em; white-space:nowrap; display:inline-block; }
+    .hero-glitch { font-size:1.06em; white-space:nowrap; display:inline-block; }
     /* star icon replacing the "+" in the headline */
     .hero-star { height:0.72em; width:auto; vertical-align:-0.06em; margin:0 0.04em;
       filter: drop-shadow(0 0 10px rgba(197,242,48,0.45));
