@@ -120,7 +120,7 @@
     .hero-bg-img::before {
       content:''; position:absolute; inset:-6%;
       background:url('assets/baba.webp?v=1') center/cover no-repeat;
-      filter: blur(3px) brightness(0.7) saturate(1.18);
+      filter: blur(2px) brightness(0.92) saturate(1.22);
       transform: scale(1.08);
       animation: heroKen 28s ease-in-out infinite alternate;
       will-change: transform;
@@ -128,8 +128,8 @@
     .hero-bg-img::after {
       content:''; position:absolute; inset:0;
       background:
-        linear-gradient(105deg, rgba(13,13,13,0.94) 0%, rgba(13,13,13,0.6) 48%, rgba(13,13,13,0.32) 100%),
-        linear-gradient(to bottom, rgba(13,13,13,0.2) 55%, #0D0D0D 100%);
+        linear-gradient(105deg, rgba(13,13,13,0.82) 0%, rgba(13,13,13,0.42) 48%, rgba(13,13,13,0.18) 100%),
+        linear-gradient(to bottom, rgba(13,13,13,0.12) 58%, #0D0D0D 100%);
     }
     @keyframes heroKen {
       0%   { transform: scale(1.08) translate(0,0); }
@@ -147,7 +147,7 @@
     .hero-bg-grid { z-index:0; }
     /* Утсанд босоо crop ашиглах */
     @media (max-width:600px) {
-      .hero-bg-img::before { background-image:url('assets/baba.webp?v=1'); filter: blur(3px) brightness(0.62) saturate(1.18); }
+      .hero-bg-img::before { background-image:url('assets/tete.webp?v=1'); filter: blur(2px) brightness(0.9) saturate(1.22); }
     }
     /* ── Hero "Never the same." — horizontal glitch + scatter/mass effect ── */
     .hero-glitch { position:relative; display:inline-block;
