@@ -13,7 +13,7 @@
 - **Git author:** name `morphues0505-cpu`, email `254476816+morphues0505-cpu@users.noreply.github.com`
 - **Live (primary, clean):** https://jeans-ink.pages.dev/
 - **Live (mirror):** https://morphues0505-cpu.github.io/jeans-ink/
-- **DEPLOY = just `git push` to master.** Netlify **and** GitHub Pages both auto-deploy in ~1–2 min. No build step (static site).
+- **DEPLOY = just `git push` to master.** Cloudflare Pages **and** GitHub Pages both auto-deploy in ~1–2 min. No build step (static site).
 - **Marketing files (NOT in repo):** `D:\@NKHA\JEANS-INK\MARKETING\` — `JEANS-INK-Content-Calendar.xlsx`, `JEANS-INK-Design-Guide.xlsx`, `build_*.py`.
 - **Source assets (gitignored):** `assets/_src/` holds large originals (e.g. 17MB `hero.png`).
 
