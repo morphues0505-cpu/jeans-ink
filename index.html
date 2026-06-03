@@ -119,8 +119,8 @@
     .hero-bg-img { position:absolute; inset:0; z-index:0; overflow:hidden; }
     .hero-bg-img::before {
       content:''; position:absolute; inset:-6%;
-      background:url('assets/hero.webp?v=2') center/cover no-repeat;
-      filter: blur(2px) brightness(0.62) saturate(1.12);
+      background:url('assets/baba.webp?v=1') center/cover no-repeat;
+      filter: blur(3px) brightness(0.7) saturate(1.18);
       transform: scale(1.08);
       animation: heroKen 28s ease-in-out infinite alternate;
       will-change: transform;
@@ -138,14 +138,16 @@
     /* neon glow pulse over the scene */
     .hero-bg-img .hero-glow {
       position:absolute; inset:0; z-index:1; pointer-events:none;
-      background: radial-gradient(ellipse 50% 40% at 62% 42%, rgba(197,242,48,0.16), transparent 70%);
-      animation: heroGlow 6s ease-in-out infinite;
+      background:
+        radial-gradient(ellipse 55% 45% at 62% 42%, rgba(197,242,48,0.28), transparent 70%),
+        radial-gradient(ellipse 40% 35% at 30% 60%, rgba(99,179,237,0.18), transparent 72%);
+      animation: heroGlow 5s ease-in-out infinite;
     }
-    @keyframes heroGlow { 0%,100%{ opacity:.45 } 50%{ opacity:.9 } }
+    @keyframes heroGlow { 0%,100%{ opacity:.55 } 50%{ opacity:1 } }
     .hero-bg-grid { z-index:0; }
     /* Утсанд босоо crop ашиглах */
     @media (max-width:600px) {
-      .hero-bg-img::before { background-image:url('assets/hero-mobile.webp?v=2'); filter: blur(2px) brightness(0.55) saturate(1.12); }
+      .hero-bg-img::before { background-image:url('assets/baba.webp?v=1'); filter: blur(3px) brightness(0.62) saturate(1.18); }
     }
     /* ── Hero "Never the same." — horizontal glitch + scatter/mass effect ── */
     .hero-glitch { position:relative; display:inline-block;
