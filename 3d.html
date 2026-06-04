@@ -46,6 +46,17 @@
     }
     .v3d-note b { color: var(--accent); }
     .v3d-hint { text-align:center; color: var(--text-muted); font-size:.8rem; margin-top:14px; letter-spacing:.04em; }
+    .v3d-label { text-align:center; font-family:'Montserrat',sans-serif; font-size:.72rem;
+      letter-spacing:.18em; text-transform:uppercase; color:var(--text-muted); margin:30px 0 12px; }
+    .v3d-types { display:flex; gap:12px; justify-content:center; }
+    .v3d-type {
+      font-family:'Montserrat',sans-serif; font-weight:700; font-size:.9rem;
+      padding:11px 26px; border-radius:999px; cursor:pointer;
+      background:transparent; color:var(--text); border:1px solid var(--border-2);
+      transition: all .15s ease;
+    }
+    .v3d-type:hover { border-color:var(--accent); }
+    .v3d-type.active { background:var(--accent); color:#0D0D0D; border-color:var(--accent); }
   </style>
 </head>
 <body class="theme-dark">
@@ -81,7 +92,7 @@
     <div class="v3d-stage">
       <model-viewer
         id="viewer"
-        src="assets/models/jeans.glb?v=1"
+        src="assets/models/jeans-skinny.glb?v=1"
         poster=""
         alt="JEANS·INK 3D preview"
         camera-controls
@@ -97,6 +108,15 @@
       </model-viewer>
     </div>
 
+    <!-- Step 1: pants fit -->
+    <p class="v3d-label">1 · Загвар сонгох</p>
+    <div class="v3d-types" id="types">
+      <button class="v3d-type active" data-type="skinny" data-src="assets/models/jeans-skinny.glb?v=1">Skinny</button>
+      <button class="v3d-type" data-type="wide" data-src="assets/models/jeans-wide.glb?v=1">Wide</button>
+    </div>
+
+    <!-- Step 2: colour -->
+    <p class="v3d-label">2 · Өнгө сонгох</p>
     <div class="v3d-controls" id="swatches">
       <span class="swatch active" data-color="#3b5a7a" style="background:#3b5a7a" title="Classic blue"></span>
       <span class="swatch" data-color="#9fb6cc" style="background:#9fb6cc" title="Light wash"></span>
@@ -106,11 +126,12 @@
     </div>
     <p class="v3d-hint">Drag = эргүүлэх · Scroll/pinch = томруулах</p>
 
-    <div class="v3d-note">
-      <b>Beta тэмдэглэл:</b> Энэ хуудас 3D харагдацыг турших зориулалттай.
-      Одоогоор <code>assets/models/jeans.glb</code> файл шаардлагатай — жинсний 3D загвар
-      (Sketchfab CC лицензтэй) татаж тэр замд хийвэл шууд ажиллана. Дараагийн алхамд
-      хэрэглэгчийн наалтыг 3D даавуун дээр буулгах (Pacdora маягийн) боломжийг нэмж болно.
+    <!-- Step 3: continue -->
+    <div style="text-align:center;margin-top:34px">
+      <a href="catalog.html" class="btn btn-primary" id="v3dNext">
+        Наалт сонгох
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
     </div>
   </div>
 </main>
@@ -118,23 +139,37 @@
 <script>
   const viewer = document.getElementById('viewer');
   const swatches = document.getElementById('swatches');
+  const types = document.getElementById('types');
+  let currentType = 'skinny';
+  let currentColor = '#3b5a7a';
 
-  // Fallback: if the jeans.glb is missing, load a public placeholder so the
-  // 3D viewer still demonstrates rotate/zoom while a real model is sourced.
-  viewer.addEventListener('error', () => {
-    if (!viewer.dataset.fellBack) {
-      viewer.dataset.fellBack = '1';
-      viewer.src = 'https://modelviewer.dev/shared-assets/models/Astronaut.glb';
-    }
+  // Re-apply the chosen colour every time a model finishes loading
+  viewer.addEventListener('load', () => applyColor(currentColor));
+
+  // Type select — loads the model lazily (only when that type is picked)
+  types.addEventListener('click', (e) => {
+    const t = e.target.closest('.v3d-type');
+    if (!t || t.classList.contains('active')) return;
+    [...types.children].forEach(b => b.classList.remove('active'));
+    t.classList.add('active');
+    currentType = t.dataset.type;
+    viewer.dataset.fellBack = '';
+    viewer.src = t.dataset.src;   // fetched now, not at page load
+    saveChoice();
   });
 
-  // Denim colour swap via the scene-graph material API
+  // Colour swap via the scene-graph material API
   swatches.addEventListener('click', (e) => {
     const sw = e.target.closest('.swatch');
     if (!sw) return;
     [...swatches.children].forEach(s => s.classList.remove('active'));
     sw.classList.add('active');
-    const hex = sw.dataset.color;
+    currentColor = sw.dataset.color;
+    applyColor(currentColor);
+    saveChoice();
+  });
+
+  function applyColor(hex) {
     const c = hexToRgb(hex);
     const mats = viewer.model && viewer.model.materials;
     if (mats && mats.length) {
@@ -142,7 +177,26 @@
         try { m.pbrMetallicRoughness.setBaseColorFactor([c.r, c.g, c.b, 1]); } catch (_) {}
       });
     }
+  }
+
+  // If a model file is missing (e.g. Wide not added yet), tell the user
+  viewer.addEventListener('error', () => {
+    if (viewer.dataset.fellBack) return;
+    viewer.dataset.fellBack = '1';
+    if (currentType === 'wide') {
+      alert('Wide загвар одоохондоо бэлэн болоогүй байна. Skinny-г үзнэ үү.');
+      const skinnyBtn = types.querySelector('[data-type="skinny"]');
+      types.querySelectorAll('.v3d-type').forEach(b => b.classList.remove('active'));
+      skinnyBtn.classList.add('active');
+      currentType = 'skinny';
+      viewer.src = skinnyBtn.dataset.src;
+    }
   });
+
+  // Persist the choice so the next step (catalog/order) can read it
+  function saveChoice() {
+    try { localStorage.setItem('ji_fit', JSON.stringify({ type: currentType, color: currentColor })); } catch (_) {}
+  }
 
   function hexToRgb(hex) {
     const n = parseInt(hex.slice(1), 16);
