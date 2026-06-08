@@ -148,7 +148,7 @@
       <label>Хэмжээ <input type="range" id="stickSize" min="20" max="200" value="70"></label>
       <button id="stickClear">Бүгдийг арилгах</button>
     </div>
-    <p class="v3d-hint" id="stickHint">Наалт дараад → жинс дээр товшиж наана</p>
+    <p class="v3d-hint" id="stickHint">Наалт дараад → жинс дээр товш · наалтаа чирж зөөнө, slider-ээр томруулна</p>
 
     <!-- Step 4: continue -->
     <div style="text-align:center;margin-top:34px">
@@ -236,9 +236,12 @@
       targetMeshes = []; denimMaterials = [];
       modelGroup.traverse((o) => {
         if (o.isMesh) {
+          // DecalGeometry needs non-indexed geometry with normals
+          if (o.geometry.index) o.geometry = o.geometry.toNonIndexed();
+          if (!o.geometry.attributes.normal) o.geometry.computeVertexNormals();
           targetMeshes.push(o);
           const mats = Array.isArray(o.material) ? o.material : [o.material];
-          mats.forEach(m => { if (m && m.map) denimMaterials.push(m); else if (m) denimMaterials.push(m); });
+          mats.forEach(m => { if (m) denimMaterials.push(m); });
         }
       });
       // center + scale to fit
@@ -366,17 +369,49 @@
     saveState();
   }
 
-  // ---- pointer: tap = place/select, drag = orbit ----
-  let down = null;
+  // re-project a decal onto a new surface point (drag-to-move)
+  function moveDecal(rec, intersection) {
+    rec.target = intersection.object;
+    rec.point.copy(intersection.point);
+    const normal = intersection.face.normal.clone();
+    normal.transformDirection(rec.target.matrixWorld).normalize();
+    const dummy = new THREE.Object3D();
+    dummy.position.copy(rec.point);
+    dummy.lookAt(rec.point.clone().add(normal));
+    rec.orientation.copy(dummy.rotation);
+    rec.mesh.geometry.dispose();
+    rec.mesh.geometry = buildDecalGeometry(rec.target, rec.point, rec.orientation, rec.size);
+    saveState();
+  }
+
+  // ---- pointer: tap = place/select · drag a sticker = move · drag empty = orbit ----
+  let down = null, dragRec = null;
   renderer.domElement.addEventListener('pointerdown', (e) => {
     down = { x: e.clientX, y: e.clientY, t: Date.now() };
     controls.autoRotate = false;
+    if (!armedPatch) {
+      const hitDecal = intersectDecals(e);
+      if (hitDecal) {
+        dragRec = decals.find(d => d.mesh === hitDecal);
+        selectDecal(dragRec);
+        controls.enabled = false;                       // grab the sticker, not the camera
+        renderer.domElement.setPointerCapture(e.pointerId);
+      }
+    }
+  });
+  renderer.domElement.addEventListener('pointermove', (e) => {
+    if (!dragRec) return;
+    const hit = intersectModel(e);
+    if (hit) moveDecal(dragRec, hit);
   });
   renderer.domElement.addEventListener('pointerup', (e) => {
+    const wasDragging = !!dragRec;
+    if (dragRec) { dragRec = null; controls.enabled = true; }
     if (!down) return;
     const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
     const tap = moved < 6 && (Date.now() - down.t) < 400;
     down = null;
+    if (wasDragging) return;                              // it was a move, not a tap
     if (!tap) return;
     const hitDecal = intersectDecals(e);
     if (hitDecal) { selectDecal(decals.find(d => d.mesh === hitDecal)); return; }
