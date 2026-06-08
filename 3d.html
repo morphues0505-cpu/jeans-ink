@@ -48,15 +48,19 @@
     .v3d-hint { text-align:center; color: var(--text-muted); font-size:.8rem; margin-top:14px; letter-spacing:.04em; }
     .v3d-label { text-align:center; font-family:'Montserrat',sans-serif; font-size:.72rem;
       letter-spacing:.18em; text-transform:uppercase; color:var(--text-muted); margin:30px 0 12px; }
-    .v3d-types { display:flex; gap:12px; justify-content:center; }
+    .v3d-types { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
     .v3d-type {
-      font-family:'Montserrat',sans-serif; font-weight:700; font-size:.9rem;
-      padding:11px 26px; border-radius:999px; cursor:pointer;
-      background:transparent; color:var(--text); border:1px solid var(--border-2);
-      transition: all .15s ease;
+      font-family:'Montserrat',sans-serif; font-weight:700; font-size:.82rem;
+      padding:14px 22px 12px; border-radius:16px; cursor:pointer; letter-spacing:.06em;
+      background:rgba(255,255,255,.04); color:var(--text); border:1px solid var(--border-2);
+      transition: all .18s ease; display:flex; flex-direction:column; align-items:center; gap:8px;
+      min-width:110px;
     }
-    .v3d-type:hover { border-color:var(--accent); }
-    .v3d-type.active { background:var(--accent); color:#0D0D0D; border-color:var(--accent); }
+    .v3d-type:hover { border-color:var(--accent); background:rgba(197,242,48,.06); }
+    .v3d-type.active { background:rgba(197,242,48,.13); color:var(--accent); border-color:var(--accent); }
+    .v3d-type svg { opacity:.7; transition: opacity .18s; }
+    .v3d-type.active svg { opacity:1; }
+    .v3d-type.active svg path { fill: var(--accent); }
   </style>
 </head>
 <body class="theme-dark">
@@ -111,8 +115,22 @@
     <!-- Step 1: pants fit -->
     <p class="v3d-label">1 · Загвар сонгох</p>
     <div class="v3d-types" id="types">
-      <button class="v3d-type active" data-type="skinny" data-src="assets/models/jeans-skinny.glb?v=1">Skinny</button>
-      <button class="v3d-type" data-type="wide" data-src="assets/models/jeans-wide.glb?v=1">Wide</button>
+      <button class="v3d-type active" data-type="skinny" data-src="assets/models/jeans-skinny.glb?v=1">
+        <!-- Skinny silhouette -->
+        <svg width="36" height="54" viewBox="0 0 36 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 0 L28 0 L30 2 L26 26 L28 54 L20 54 L18 32 L16 54 L8 54 L10 26 L6 2 Z" fill="#aaa"/>
+          <rect x="6" y="2" width="24" height="4" rx="2" fill="#888"/>
+        </svg>
+        SKINNY
+      </button>
+      <button class="v3d-type" data-type="wide" data-src="assets/models/jeans-wide.glb?v=1">
+        <!-- Wide silhouette -->
+        <svg width="50" height="54" viewBox="0 0 50 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 0 L44 0 L46 2 L38 26 L44 54 L30 54 L25 34 L20 54 L6 54 L12 26 L4 2 Z" fill="#aaa"/>
+          <rect x="4" y="2" width="42" height="4" rx="2" fill="#888"/>
+        </svg>
+        WIDE
+      </button>
     </div>
 
     <!-- Step 2: colour -->
