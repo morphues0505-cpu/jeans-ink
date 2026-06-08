@@ -82,6 +82,7 @@
       font-size:17px; font-weight:800; line-height:1; display:inline-flex; align-items:center; justify-content:center;
       box-shadow:0 2px 7px rgba(0,0,0,.4); font-family:'Montserrat',sans-serif; }
     .v3d-decalui .b-minus, .v3d-decalui .b-plus { background:var(--accent); color:#0D0D0D; }
+    .v3d-decalui .b-rot { background:#0D0D0D; color:#fff; font-size:19px; }
     .v3d-decalui .b-del { background:#ee2b3b; color:#fff; }
     .v3d-decalui button:active { transform:scale(.9); }
   </style>
@@ -121,6 +122,7 @@
       <div class="v3d-decalui" id="decalUI">
         <button class="b-minus" title="Жижигрүүлэх">−</button>
         <button class="b-plus"  title="Томруулах">+</button>
+        <button class="b-rot"   title="Эргүүлэх">⟳</button>
         <button class="b-del"   title="Устгах">✕</button>
       </div>
     </div>
@@ -317,17 +319,23 @@
     return new DecalGeometry(target, point, orientation, s);
   }
 
+  // orientation looking along the surface normal, with an extra roll around it
+  function decalOrientation(point, normal, roll) {
+    const dummy = new THREE.Object3D();
+    dummy.position.copy(point);
+    dummy.lookAt(point.clone().add(normal));
+    dummy.rotateZ(roll || 0);            // roll = spin around the normal axis
+    return dummy.rotation.clone();
+  }
+
   function placeDecal(intersection) {
     const target = intersection.object;
     const point = intersection.point.clone();
     // world-space normal
     const normal = intersection.face.normal.clone();
     normal.transformDirection(target.matrixWorld).normalize();
-    // orientation: look along the normal
-    const dummy = new THREE.Object3D();
-    dummy.position.copy(point);
-    dummy.lookAt(point.clone().add(normal));
-    const orientation = dummy.rotation.clone();
+    const roll = 0;
+    const orientation = decalOrientation(point, normal, roll);
     const size = sliderToSize();
 
     const geo = buildDecalGeometry(target, point, orientation, size);
@@ -344,9 +352,19 @@
     const mesh = new THREE.Mesh(geo, mat);
     mesh.renderOrder = 2;
     scene.add(mesh);
-    const rec = { mesh, point, orientation, size, src: armedPatch, target };
+    const rec = { mesh, point, orientation, size, src: armedPatch, target, normal: normal.clone(), roll };
     decals.push(rec);
     selectDecal(rec);
+    saveState();
+  }
+
+  // rotate the selected decal around its surface normal
+  function rotateSelected(deg) {
+    if (!selDecal) return;
+    selDecal.roll = (selDecal.roll || 0) + deg * Math.PI / 180;
+    selDecal.orientation = decalOrientation(selDecal.point, selDecal.normal, selDecal.roll);
+    selDecal.mesh.geometry.dispose();
+    selDecal.mesh.geometry = buildDecalGeometry(selDecal.target, selDecal.point, selDecal.orientation, selDecal.size);
     saveState();
   }
 
@@ -398,6 +416,7 @@
   }
   decalUI.querySelector('.b-minus').addEventListener('click', (e) => { e.stopPropagation(); resizeBy(1/1.25); });
   decalUI.querySelector('.b-plus').addEventListener('click',  (e) => { e.stopPropagation(); resizeBy(1.25); });
+  decalUI.querySelector('.b-rot').addEventListener('click',   (e) => { e.stopPropagation(); rotateSelected(30); });
   decalUI.querySelector('.b-del').addEventListener('click',   (e) => { e.stopPropagation(); if (selDecal) deleteDecal(selDecal); });
 
   function deleteDecal(rec) {
@@ -421,10 +440,8 @@
     rec.point.copy(intersection.point);
     const normal = intersection.face.normal.clone();
     normal.transformDirection(rec.target.matrixWorld).normalize();
-    const dummy = new THREE.Object3D();
-    dummy.position.copy(rec.point);
-    dummy.lookAt(rec.point.clone().add(normal));
-    rec.orientation.copy(dummy.rotation);
+    rec.normal = normal.clone();
+    rec.orientation = decalOrientation(rec.point, rec.normal, rec.roll || 0);
     rec.mesh.geometry.dispose();
     rec.mesh.geometry = buildDecalGeometry(rec.target, rec.point, rec.orientation, rec.size);
     saveState();
