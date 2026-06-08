@@ -75,6 +75,15 @@
       padding:8px 18px; border-radius:999px; cursor:pointer; background:transparent;
       color:var(--text); border:1px solid var(--border-2); transition:all .15s; }
     .v3d-toolbar button:hover { border-color:var(--accent); color:var(--accent); }
+    /* on-sticker floating controls */
+    .v3d-decalui { position:absolute; display:none; gap:7px; z-index:6;
+      transform:translate(-50%,-160%); pointer-events:auto; }
+    .v3d-decalui button { width:32px; height:32px; border-radius:50%; border:none; cursor:pointer;
+      font-size:17px; font-weight:800; line-height:1; display:inline-flex; align-items:center; justify-content:center;
+      box-shadow:0 2px 7px rgba(0,0,0,.4); font-family:'Montserrat',sans-serif; }
+    .v3d-decalui .b-minus, .v3d-decalui .b-plus { background:var(--accent); color:#0D0D0D; }
+    .v3d-decalui .b-del { background:#ee2b3b; color:#fff; }
+    .v3d-decalui button:active { transform:scale(.9); }
   </style>
 </head>
 <body class="theme-dark">
@@ -109,6 +118,11 @@
 
     <div class="v3d-stage" id="stage">
       <div class="v3d-spinner" id="spinner">Ачааллаж байна…</div>
+      <div class="v3d-decalui" id="decalUI">
+        <button class="b-minus" title="Жижигрүүлэх">−</button>
+        <button class="b-plus"  title="Томруулах">+</button>
+        <button class="b-del"   title="Устгах">✕</button>
+      </div>
     </div>
 
     <!-- Step 1: pants fit -->
@@ -148,7 +162,7 @@
       <label>Хэмжээ <input type="range" id="stickSize" min="20" max="200" value="70"></label>
       <button id="stickClear">Бүгдийг арилгах</button>
     </div>
-    <p class="v3d-hint" id="stickHint">Наалт дараад → жинс дээр товш · наалтаа чирж зөөнө, slider-ээр томруулна</p>
+    <p class="v3d-hint" id="stickHint">Наалт дараад → жинс дээр товш · чирж зөөнө · дээрх − + товчоор томруул/жижигрүүл</p>
 
     <!-- Step 4: continue -->
     <div style="text-align:center;margin-top:34px">
@@ -354,6 +368,38 @@
     saveState();
   }
 
+  // resize the selected decal by a multiplier (on-sticker +/- buttons)
+  function resizeBy(factor) {
+    if (!selDecal) return;
+    const minS = modelScale * 0.03, maxS = modelScale * 0.6;
+    selDecal.size = Math.max(minS, Math.min(maxS, selDecal.size * factor));
+    selDecal.mesh.geometry.dispose();
+    selDecal.mesh.geometry = buildDecalGeometry(selDecal.target, selDecal.point, selDecal.orientation, selDecal.size);
+    stickSize.value = Math.round(70 * (selDecal.size / (modelScale * 0.16)));
+    saveState();
+  }
+
+  // floating controls anchored to the selected decal
+  const decalUI = document.getElementById('decalUI');
+  const _proj = new THREE.Vector3(), _fwd = new THREE.Vector3(), _toCam = new THREE.Vector3();
+  function updateDecalUI() {
+    if (!selDecal) { decalUI.style.display = 'none'; return; }
+    // hide when the sticker faces away from the camera
+    _fwd.set(0, 0, 1).applyEuler(selDecal.orientation);
+    _toCam.copy(camera.position).sub(selDecal.point);
+    if (_fwd.dot(_toCam) <= 0) { decalUI.style.display = 'none'; return; }
+    _proj.copy(selDecal.point).project(camera);
+    if (_proj.z > 1) { decalUI.style.display = 'none'; return; }
+    const x = (_proj.x * 0.5 + 0.5) * canvas.clientWidth;
+    const y = (-_proj.y * 0.5 + 0.5) * canvas.clientHeight;
+    decalUI.style.left = x + 'px';
+    decalUI.style.top  = y + 'px';
+    decalUI.style.display = 'flex';
+  }
+  decalUI.querySelector('.b-minus').addEventListener('click', (e) => { e.stopPropagation(); resizeBy(1/1.25); });
+  decalUI.querySelector('.b-plus').addEventListener('click',  (e) => { e.stopPropagation(); resizeBy(1.25); });
+  decalUI.querySelector('.b-del').addEventListener('click',   (e) => { e.stopPropagation(); if (selDecal) deleteDecal(selDecal); });
+
   function deleteDecal(rec) {
     const i = decals.indexOf(rec);
     if (i >= 0) decals.splice(i, 1);
@@ -515,6 +561,7 @@
     requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
+    updateDecalUI();
   }
   animate();
 
