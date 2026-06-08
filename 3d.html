@@ -23,8 +23,27 @@
     model-viewer {
       width: 100%; height: 70vh; max-height: 620px;
       --poster-color: transparent;
+      --min-hotspot-opacity: 0;   /* fully hide stickers occluded behind the model */
       background: #f5f5f5;
     }
+    /* sticker picker */
+    .v3d-patches { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; max-width:580px; margin:0 auto; }
+    .v3d-patch { width:52px; height:52px; border-radius:11px; border:2px solid var(--border-2);
+      background:#fff center/72% no-repeat; cursor:pointer; transition:all .15s ease; padding:0; }
+    .v3d-patch:hover { border-color:var(--accent); transform:scale(1.07); }
+    .v3d-patch.armed { border-color:var(--accent); box-shadow:0 0 0 3px rgba(197,242,48,.28); transform:scale(1.07); }
+    .v3d-toolbar { display:flex; gap:18px; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:18px; }
+    .v3d-toolbar label { font-size:.78rem; color:var(--text-muted); font-family:'Montserrat',sans-serif; display:flex; align-items:center; gap:8px; }
+    .v3d-toolbar input[type=range] { accent-color:var(--accent); width:120px; }
+    .v3d-toolbar button { font-family:'Montserrat',sans-serif; font-weight:600; font-size:.78rem;
+      padding:8px 18px; border-radius:999px; cursor:pointer; background:transparent;
+      color:var(--text); border:1px solid var(--border-2); transition:all .15s; }
+    .v3d-toolbar button:hover { border-color:var(--accent); color:var(--accent); }
+    /* the placed sticker (model-viewer hotspot) */
+    .v3d-sticker { background:center/contain no-repeat; cursor:pointer; padding:0; border:none;
+      transform:translate(-50%,-50%); filter:drop-shadow(0 2px 5px rgba(0,0,0,.4));
+      transition:opacity .2s ease; }
+    .v3d-sticker.sel { outline:2px dashed var(--accent); outline-offset:3px; border-radius:4px; }
     .v3d-controls {
       display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
       margin-top: 22px;
@@ -143,10 +162,19 @@
     </div>
     <p class="v3d-hint">Drag = эргүүлэх · Scroll/pinch = томруулах</p>
 
-    <!-- Step 3: continue -->
+    <!-- Step 3: stickers -->
+    <p class="v3d-label">3 · Наалт сонгож, байрлуулах</p>
+    <div class="v3d-patches" id="patches"></div>
+    <div class="v3d-toolbar">
+      <label>Хэмжээ <input type="range" id="stickSize" min="28" max="120" value="60"></label>
+      <button id="stickClear">Бүгдийг арилгах</button>
+    </div>
+    <p class="v3d-hint" id="stickHint">Наалт дараад → жинс дээр товшиж байрлуул</p>
+
+    <!-- Step 4: continue -->
     <div style="text-align:center;margin-top:34px">
-      <a href="catalog.html" class="btn btn-primary" id="v3dNext">
-        Наалт сонгох
+      <a href="order.html" class="btn btn-primary" id="v3dNext">
+        Захиалга өгөх
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
@@ -171,6 +199,7 @@
     t.classList.add('active');
     currentType = t.dataset.type;
     viewer.dataset.fellBack = '';
+    clearStickers();              // geometry changes → drop placed stickers
     viewer.src = t.dataset.src;   // fetched now, not at page load
     saveChoice();
   });
@@ -202,6 +231,117 @@
     viewer.dataset.fellBack = '1';
     console.warn('3D model load error, type:', currentType);
   });
+
+  /* ============ STICKER PLACEMENT ============ */
+  const patchesEl = document.getElementById('patches');
+  const sizeEl    = document.getElementById('stickSize');
+  const hintEl    = document.getElementById('stickHint');
+  const PATCH_COUNT = 30;
+  let armedPatch = null;   // src of the patch currently "in hand"
+  let selSticker = null;   // currently selected placed sticker
+  let stickId = 0;
+
+  // Build the patch thumbnail strip
+  for (let i = 1; i <= PATCH_COUNT; i++) {
+    const src = `assets/patterns/p${i}.webp?v=3`;
+    const b = document.createElement('button');
+    b.className = 'v3d-patch';
+    b.dataset.src = src;
+    b.style.backgroundImage = `url(${src})`;
+    patchesEl.appendChild(b);
+  }
+
+  // Arm / disarm a patch
+  patchesEl.addEventListener('click', (e) => {
+    const p = e.target.closest('.v3d-patch');
+    if (!p) return;
+    const already = p.classList.contains('armed');
+    [...patchesEl.children].forEach(x => x.classList.remove('armed'));
+    if (already) { armedPatch = null; setArmedUI(false); }
+    else { p.classList.add('armed'); armedPatch = p.dataset.src; setArmedUI(true); }
+  });
+
+  function setArmedUI(on) {
+    if (on) {
+      viewer.removeAttribute('auto-rotate');
+      viewer.style.cursor = 'crosshair';
+      hintEl.textContent = 'Жинс дээр товшиж наалтыг байрлуул';
+      hintEl.style.color = 'var(--accent)';
+    } else {
+      viewer.style.cursor = '';
+      hintEl.textContent = 'Наалт дараад → жинс дээр товшиж байрлуул';
+      hintEl.style.color = '';
+    }
+  }
+
+  // Tap-vs-drag: a real tap (no orbit) places / selects
+  let down = null;
+  viewer.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+  viewer.addEventListener('pointerup', (e) => {
+    if (!down) return;
+    const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+    const tap = moved < 6 && (Date.now() - down.t) < 400;
+    down = null;
+    if (!tap) return;
+    if (e.target.closest('.v3d-sticker')) return;   // sticker handles its own click
+    if (armedPatch) placeSticker(e.clientX, e.clientY);
+    else selectSticker(null);
+  });
+
+  function placeSticker(cx, cy) {
+    const hit = viewer.positionAndNormalFromPoint(cx, cy);
+    if (!hit) { hintEl.textContent = 'Жинсэн дээр товшино уу 👖'; return; }
+    const id = 'st' + (stickId++);
+    const el = document.createElement('button');
+    el.className = 'v3d-sticker';
+    el.slot = 'hotspot-' + id;
+    el.dataset.position = hit.position.toString();
+    el.dataset.normal   = hit.normal.toString();
+    el.dataset.src      = armedPatch;
+    el.style.backgroundImage = `url(${armedPatch})`;
+    const sz = sizeEl.value + 'px';
+    el.style.width = sz; el.style.height = sz;
+    el.addEventListener('click', (ev) => { ev.stopPropagation(); selectSticker(el); });
+    viewer.appendChild(el);
+    selectSticker(el);
+    saveStickers();
+  }
+
+  function selectSticker(el) {
+    if (selSticker) selSticker.classList.remove('sel');
+    selSticker = el;
+    if (el) { el.classList.add('sel'); sizeEl.value = parseInt(el.style.width) || 60; }
+  }
+
+  // Resize the selected sticker
+  sizeEl.addEventListener('input', () => {
+    if (!selSticker) return;
+    const s = sizeEl.value + 'px';
+    selSticker.style.width = s; selSticker.style.height = s;
+    saveStickers();
+  });
+
+  // Clear all
+  document.getElementById('stickClear').addEventListener('click', clearStickers);
+  function clearStickers() {
+    viewer.querySelectorAll('.v3d-sticker').forEach(s => s.remove());
+    selSticker = null;
+    saveStickers();
+  }
+
+  // Delete the selected one with keyboard
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selSticker) {
+      selSticker.remove(); selSticker = null; saveStickers();
+    }
+  });
+
+  function saveStickers() {
+    const list = [...viewer.querySelectorAll('.v3d-sticker')].map(s => ({
+      src: s.dataset.src, pos: s.dataset.position, nor: s.dataset.normal, size: parseInt(s.style.width)
+    }));
+    try { localStorage.setItem('ji_3d_stickers', JSON.stringify({ type: currentType, stickers: list })); } catch (_) {}
+  }
 
   // Persist the choice so the next step (catalog/order) can read it
   function saveChoice() {
