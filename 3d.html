@@ -83,6 +83,8 @@
       box-shadow:0 2px 7px rgba(0,0,0,.4); font-family:'Montserrat',sans-serif; }
     .v3d-decalui .b-minus, .v3d-decalui .b-plus { background:var(--accent); color:#0D0D0D; }
     .v3d-decalui .b-rot { background:#0D0D0D; color:#fff; font-size:19px; }
+    .v3d-decalui .b-move { background:#0D0D0D; color:#fff; font-size:15px; }
+    .v3d-decalui .b-move.on { background:var(--accent); }
     .v3d-decalui .b-del { background:#ee2b3b; color:#fff; }
     .v3d-decalui button:active { transform:scale(.9); }
   </style>
@@ -120,6 +122,7 @@
     <div class="v3d-stage" id="stage">
       <div class="v3d-spinner" id="spinner">Ачааллаж байна…</div>
       <div class="v3d-decalui" id="decalUI">
+        <button class="b-move"  title="Зөөх — дараад шинэ газар товш">✋</button>
         <button class="b-minus" title="Жижигрүүлэх">−</button>
         <button class="b-plus"  title="Томруулах">+</button>
         <button class="b-rot"   title="Эргүүлэх">⟳</button>
@@ -417,6 +420,15 @@
   decalUI.querySelector('.b-minus').addEventListener('click', (e) => { e.stopPropagation(); resizeBy(1/1.25); });
   decalUI.querySelector('.b-plus').addEventListener('click',  (e) => { e.stopPropagation(); resizeBy(1.25); });
   decalUI.querySelector('.b-rot').addEventListener('click',   (e) => { e.stopPropagation(); rotateSelected(30); });
+  const moveBtn = decalUI.querySelector('.b-move');
+  moveBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!selDecal) return;
+    movingRec = movingRec ? null : selDecal;        // toggle move mode
+    moveBtn.classList.toggle('on', !!movingRec);
+    stickHint.textContent = movingRec ? 'Шинэ байрлал дээр товш' : 'Наалт дараад → жинс дээр товш';
+    stickHint.style.color = movingRec ? 'var(--accent)' : '';
+  });
   decalUI.querySelector('.b-del').addEventListener('click',   (e) => { e.stopPropagation(); if (selDecal) deleteDecal(selDecal); });
 
   function deleteDecal(rec) {
@@ -448,7 +460,7 @@
   }
 
   // ---- pointer: tap = place/select · drag a sticker = move · drag empty = orbit ----
-  let down = null, dragRec = null;
+  let down = null, dragRec = null, movingRec = null;
   const canvas = renderer.domElement;
 
   // CAPTURE phase on document: runs BEFORE OrbitControls' own canvas handler,
@@ -482,6 +494,16 @@
     down = null;
     if (wasDragging) return;                   // it was a move, not a tap
     if (!tap) return;
+    // move-mode: relocate the selected sticker to the tapped spot
+    if (movingRec) {
+      const hit = intersectModel(e);
+      if (hit) moveDecal(movingRec, hit);
+      movingRec = null;
+      moveBtn.classList.remove('on');
+      stickHint.textContent = 'Наалт дараад → жинс дээр товш';
+      stickHint.style.color = '';
+      return;
+    }
     const hitDecal = intersectDecals(e);
     if (hitDecal) { selectDecal(decals.find(d => d.mesh === hitDecal)); return; }
     if (armedPatch) {
