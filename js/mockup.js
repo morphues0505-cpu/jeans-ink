@@ -155,6 +155,8 @@ fileInput.addEventListener('change', async (e) => {
   statusEl.classList.add('show'); barEl.classList.add('show'); barFill.style.width = '5%';
   try {
     const blob = await removeBackground(file, {
+      model: 'isnet',                          // full-quality model (sharper edges than fp16)
+      output: { format: 'image/png', quality: 1 },
       progress: (key, cur, total) => {
         const pct = total ? Math.round((cur / total) * 100) : 0;
         if (key && key.indexOf('fetch') === 0) { statusEl.textContent = `AI model татаж байна… ${pct}%`; barFill.style.width = Math.max(5, pct) + '%'; }
