@@ -386,7 +386,12 @@
 
   // ---- pointer: tap = place/select · drag a sticker = move · drag empty = orbit ----
   let down = null, dragRec = null;
-  renderer.domElement.addEventListener('pointerdown', (e) => {
+  const canvas = renderer.domElement;
+
+  // CAPTURE phase on document: runs BEFORE OrbitControls' own canvas handler,
+  // so we can suspend the camera before it starts orbiting when grabbing a sticker.
+  document.addEventListener('pointerdown', (e) => {
+    if (e.target !== canvas) return;          // only when the click is on the 3D canvas
     down = { x: e.clientX, y: e.clientY, t: Date.now() };
     controls.autoRotate = false;
     if (!armedPatch) {
@@ -394,24 +399,25 @@
       if (hitDecal) {
         dragRec = decals.find(d => d.mesh === hitDecal);
         selectDecal(dragRec);
-        controls.enabled = false;                       // grab the sticker, not the camera
-        renderer.domElement.setPointerCapture(e.pointerId);
+        controls.enabled = false;             // grab the sticker, not the camera
       }
     }
-  });
-  renderer.domElement.addEventListener('pointermove', (e) => {
+  }, true);
+
+  window.addEventListener('pointermove', (e) => {
     if (!dragRec) return;
     const hit = intersectModel(e);
     if (hit) moveDecal(dragRec, hit);
   });
-  renderer.domElement.addEventListener('pointerup', (e) => {
+
+  window.addEventListener('pointerup', (e) => {
     const wasDragging = !!dragRec;
     if (dragRec) { dragRec = null; controls.enabled = true; }
     if (!down) return;
     const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
     const tap = moved < 6 && (Date.now() - down.t) < 400;
     down = null;
-    if (wasDragging) return;                              // it was a move, not a tap
+    if (wasDragging) return;                   // it was a move, not a tap
     if (!tap) return;
     const hitDecal = intersectDecals(e);
     if (hitDecal) { selectDecal(decals.find(d => d.mesh === hitDecal)); return; }
