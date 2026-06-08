@@ -7,8 +7,15 @@
   <title>JEANS·INK — 3D Preview (beta)</title>
   <meta name="theme-color" content="#0D0D0D">
   <link rel="stylesheet" href="css/style.css?v=17">
-  <!-- Google <model-viewer> — no build step, just a web component -->
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <!-- Three.js (no build step — ES modules from CDN) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
   <style>
     .v3d-wrap { padding: 40px 0 80px; }
     .v3d-head { text-align:center; margin-bottom: 28px; }
@@ -16,34 +23,18 @@
     .v3d-stage {
       position: relative;
       max-width: 720px; margin: 0 auto;
+      height: 70vh; max-height: 620px;
       border: 1px solid var(--border);
       border-radius: 20px; overflow: hidden;
       background: #f5f5f5;
+      touch-action: none;
     }
-    model-viewer {
-      width: 100%; height: 70vh; max-height: 620px;
-      --poster-color: transparent;
-      --min-hotspot-opacity: 0;   /* fully hide stickers occluded behind the model */
-      background: #f5f5f5;
+    .v3d-stage canvas { display:block; width:100%; height:100%; }
+    .v3d-spinner {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      font-family:'Montserrat',sans-serif; font-size:.8rem; letter-spacing:.1em;
+      text-transform:uppercase; color:#888; pointer-events:none;
     }
-    /* sticker picker */
-    .v3d-patches { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; max-width:580px; margin:0 auto; }
-    .v3d-patch { width:52px; height:52px; border-radius:11px; border:2px solid var(--border-2);
-      background:#fff center/72% no-repeat; cursor:pointer; transition:all .15s ease; padding:0; }
-    .v3d-patch:hover { border-color:var(--accent); transform:scale(1.07); }
-    .v3d-patch.armed { border-color:var(--accent); box-shadow:0 0 0 3px rgba(197,242,48,.28); transform:scale(1.07); }
-    .v3d-toolbar { display:flex; gap:18px; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:18px; }
-    .v3d-toolbar label { font-size:.78rem; color:var(--text-muted); font-family:'Montserrat',sans-serif; display:flex; align-items:center; gap:8px; }
-    .v3d-toolbar input[type=range] { accent-color:var(--accent); width:120px; }
-    .v3d-toolbar button { font-family:'Montserrat',sans-serif; font-weight:600; font-size:.78rem;
-      padding:8px 18px; border-radius:999px; cursor:pointer; background:transparent;
-      color:var(--text); border:1px solid var(--border-2); transition:all .15s; }
-    .v3d-toolbar button:hover { border-color:var(--accent); color:var(--accent); }
-    /* the placed sticker (model-viewer hotspot) */
-    .v3d-sticker { background:center/contain no-repeat; cursor:pointer; padding:0; border:none;
-      transform:translate(-50%,-50%); filter:drop-shadow(0 2px 5px rgba(0,0,0,.4));
-      transition:opacity .2s ease; }
-    .v3d-sticker.sel { outline:2px dashed var(--accent); outline-offset:3px; border-radius:4px; }
     .v3d-controls {
       display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
       margin-top: 22px;
@@ -55,13 +46,6 @@
     }
     .swatch:hover { transform: scale(1.12); }
     .swatch.active { border-color: var(--accent); transform: scale(1.12); }
-    .v3d-note {
-      max-width: 620px; margin: 28px auto 0; padding: 16px 20px;
-      border: 1px dashed var(--border-2); border-radius: 14px;
-      color: var(--text-muted); font-size: .85rem; line-height: 1.7;
-      font-family: 'Montserrat', sans-serif;
-    }
-    .v3d-note b { color: var(--accent); }
     .v3d-hint { text-align:center; color: var(--text-muted); font-size:.8rem; margin-top:14px; letter-spacing:.04em; }
     .v3d-label { text-align:center; font-family:'Montserrat',sans-serif; font-size:.72rem;
       letter-spacing:.18em; text-transform:uppercase; color:var(--text-muted); margin:30px 0 12px; }
@@ -78,6 +62,19 @@
     .v3d-type svg { opacity:.7; transition: opacity .18s; }
     .v3d-type.active svg { opacity:1; }
     .v3d-type.active svg path { fill: var(--accent); }
+    /* sticker picker */
+    .v3d-patches { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; max-width:580px; margin:0 auto; }
+    .v3d-patch { width:52px; height:52px; border-radius:11px; border:2px solid var(--border-2);
+      background:#fff center/72% no-repeat; cursor:pointer; transition:all .15s ease; padding:0; }
+    .v3d-patch:hover { border-color:var(--accent); transform:scale(1.07); }
+    .v3d-patch.armed { border-color:var(--accent); box-shadow:0 0 0 3px rgba(197,242,48,.28); transform:scale(1.07); }
+    .v3d-toolbar { display:flex; gap:18px; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:18px; }
+    .v3d-toolbar label { font-size:.78rem; color:var(--text-muted); font-family:'Montserrat',sans-serif; display:flex; align-items:center; gap:8px; }
+    .v3d-toolbar input[type=range] { accent-color:var(--accent); width:120px; }
+    .v3d-toolbar button { font-family:'Montserrat',sans-serif; font-weight:600; font-size:.78rem;
+      padding:8px 18px; border-radius:999px; cursor:pointer; background:transparent;
+      color:var(--text); border:1px solid var(--border-2); transition:all .15s; }
+    .v3d-toolbar button:hover { border-color:var(--accent); color:var(--accent); }
   </style>
 </head>
 <body class="theme-dark">
@@ -106,35 +103,18 @@
       <span class="badge badge-live mono">3D Preview — Beta</span>
       <h1 style="margin-top:16px">Spin it. <em>See it.</em></h1>
       <p class="muted" style="font-family:'Montserrat',sans-serif;max-width:520px;margin:12px auto 0">
-        Загвараа 360°-аар эргүүлж, томруулж үзээрэй. Доорх өнгөнүүдээр denim өнгийг солино.
+        Загвараа 360°-аар эргүүлж, томруулж үзээрэй. Наалтаа жинс дээр шууд нааж туршина.
       </p>
     </div>
 
-    <div class="v3d-stage">
-      <model-viewer
-        id="viewer"
-        src="assets/models/jeans-skinny.glb?v=1"
-        poster=""
-        alt="JEANS·INK 3D preview"
-        camera-controls
-        touch-action="pan-y"
-        auto-rotate
-        auto-rotate-delay="0"
-        rotation-per-second="18deg"
-        shadow-intensity="1"
-        exposure="1.1"
-        environment-image="neutral"
-        skybox-color="#f5f5f5"
-        camera-orbit="0deg 80deg 105%"
-        interaction-prompt="none">
-      </model-viewer>
+    <div class="v3d-stage" id="stage">
+      <div class="v3d-spinner" id="spinner">Ачааллаж байна…</div>
     </div>
 
     <!-- Step 1: pants fit -->
     <p class="v3d-label">1 · Загвар сонгох</p>
     <div class="v3d-types" id="types">
       <button class="v3d-type active" data-type="skinny" data-src="assets/models/jeans-skinny.glb?v=1">
-        <!-- Skinny silhouette -->
         <svg width="36" height="54" viewBox="0 0 36 54" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M8 0 L28 0 L30 2 L26 26 L28 54 L20 54 L18 32 L16 54 L8 54 L10 26 L6 2 Z" fill="#aaa"/>
           <rect x="6" y="2" width="24" height="4" rx="2" fill="#888"/>
@@ -142,7 +122,6 @@
         SKINNY
       </button>
       <button class="v3d-type" data-type="wide" data-src="assets/models/jeans-wide.glb?v=2">
-        <!-- Wide silhouette -->
         <svg width="50" height="54" viewBox="0 0 50 54" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M6 0 L44 0 L46 2 L38 26 L44 54 L30 54 L25 34 L20 54 L6 54 L12 26 L4 2 Z" fill="#aaa"/>
           <rect x="4" y="2" width="42" height="4" rx="2" fill="#888"/>
@@ -166,10 +145,10 @@
     <p class="v3d-label">3 · Наалт сонгож, байрлуулах</p>
     <div class="v3d-patches" id="patches"></div>
     <div class="v3d-toolbar">
-      <label>Хэмжээ <input type="range" id="stickSize" min="28" max="120" value="60"></label>
+      <label>Хэмжээ <input type="range" id="stickSize" min="30" max="140" value="70"></label>
       <button id="stickClear">Бүгдийг арилгах</button>
     </div>
-    <p class="v3d-hint" id="stickHint">Наалт дараад → жинс дээр товшиж байрлуул</p>
+    <p class="v3d-hint" id="stickHint">Наалт дараад → жинс дээр товшиж наана</p>
 
     <!-- Step 4: continue -->
     <div style="text-align:center;margin-top:34px">
@@ -181,177 +160,325 @@
   </div>
 </main>
 
-<script>
-  const viewer = document.getElementById('viewer');
-  const swatches = document.getElementById('swatches');
-  const types = document.getElementById('types');
+<script type="module">
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
+
+  const stage   = document.getElementById('stage');
+  const spinner = document.getElementById('spinner');
+
+  // ---- renderer / scene / camera ----
+  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  stage.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf5f5f5);
+
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
+  camera.position.set(0, 0.2, 3);
+
+  // lights
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 2.1));
+  const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(1.2, 2, 2.5); scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.7); fill.position.set(-2, 1, -1.5); scene.add(fill);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.enablePan = false;
+  controls.minDistance = 1.2;
+  controls.maxDistance = 6;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 1.6;
+  controls.target.set(0, 0, 0);
+
+  // ---- state ----
+  let modelGroup = null;          // current loaded model
+  let targetMeshes = [];          // meshes you can stick onto / raycast
+  let denimMaterials = [];        // materials to tint
+  let modelScale = 1;             // world height of the model
   let currentType = 'skinny';
   let currentColor = '#1a1a1a';
+  let armedPatch = null;          // patch src "in hand"
+  let selDecal = null;
+  const decals = [];              // {mesh, point, orientation, size, src, target}
 
-  // Re-apply the chosen colour every time a model finishes loading
-  viewer.addEventListener('load', () => applyColor(currentColor));
+  const loader = new GLTFLoader();
+  const draco = new DRACOLoader();
+  draco.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
+  loader.setDRACOLoader(draco);
 
-  // Type select — loads the model lazily (only when that type is picked)
+  const texLoader = new THREE.TextureLoader();
+  const patchTexCache = {};
+  function patchTexture(src) {
+    if (!patchTexCache[src]) {
+      const t = texLoader.load(src);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = 8;
+      patchTexCache[src] = t;
+    }
+    return patchTexCache[src];
+  }
+
+  // ---- load a model ----
+  function loadModel(src) {
+    spinner.style.display = 'flex';
+    spinner.textContent = 'Ачааллаж байна…';
+    clearDecals();
+    loader.load(src, (gltf) => {
+      if (modelGroup) { scene.remove(modelGroup); disposeGroup(modelGroup); }
+      modelGroup = gltf.scene;
+      targetMeshes = []; denimMaterials = [];
+      modelGroup.traverse((o) => {
+        if (o.isMesh) {
+          targetMeshes.push(o);
+          const mats = Array.isArray(o.material) ? o.material : [o.material];
+          mats.forEach(m => { if (m && m.map) denimMaterials.push(m); else if (m) denimMaterials.push(m); });
+        }
+      });
+      // center + scale to fit
+      const box = new THREE.Box3().setFromObject(modelGroup);
+      const size = new THREE.Vector3(); box.getSize(size);
+      const center = new THREE.Vector3(); box.getCenter(center);
+      modelScale = Math.max(size.x, size.y, size.z) || 1;
+      const fit = 1.9 / modelScale;
+      modelGroup.scale.setScalar(fit);
+      modelGroup.position.set(-center.x * fit, -center.y * fit, -center.z * fit);
+      modelScale = 1.9;
+      scene.add(modelGroup);
+      applyColor(currentColor);
+      spinner.style.display = 'none';
+    }, undefined, (err) => {
+      console.error('GLB load error', err);
+      spinner.textContent = 'Ачаалал амжилтгүй';
+    });
+  }
+
+  function disposeGroup(g){ g.traverse(o=>{ if(o.isMesh){ o.geometry?.dispose(); } }); }
+
+  // ---- tint ----
+  function applyColor(hex) {
+    currentColor = hex;
+    const c = new THREE.Color(hex);
+    denimMaterials.forEach(m => { try { m.color.copy(c); m.needsUpdate = true; } catch(_){} });
+    saveState();
+  }
+
+  // ================= DECALS =================
+  const raycaster = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+
+  function pointerToNDC(e) {
+    const r = renderer.domElement.getBoundingClientRect();
+    ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+  }
+
+  function intersectModel(e) {
+    pointerToNDC(e);
+    raycaster.setFromCamera(ndc, camera);
+    const hits = raycaster.intersectObjects(targetMeshes, true);
+    return hits.length ? hits[0] : null;
+  }
+
+  function intersectDecals(e) {
+    pointerToNDC(e);
+    raycaster.setFromCamera(ndc, camera);
+    const hits = raycaster.intersectObjects(decals.map(d => d.mesh), false);
+    return hits.length ? hits[0].object : null;
+  }
+
+  function sliderToSize() { return modelScale * (parseInt(stickSize.value) / 70) * 0.16; }
+
+  function buildDecalGeometry(target, point, orientation, size) {
+    const s = new THREE.Vector3(size, size, size);
+    return new DecalGeometry(target, point, orientation, s);
+  }
+
+  function placeDecal(intersection) {
+    const target = intersection.object;
+    const point = intersection.point.clone();
+    // world-space normal
+    const normal = intersection.face.normal.clone();
+    normal.transformDirection(target.matrixWorld).normalize();
+    // orientation: look along the normal
+    const dummy = new THREE.Object3D();
+    dummy.position.copy(point);
+    dummy.lookAt(point.clone().add(normal));
+    const orientation = dummy.rotation.clone();
+    const size = sliderToSize();
+
+    const geo = buildDecalGeometry(target, point, orientation, size);
+    const mat = new THREE.MeshStandardMaterial({
+      map: patchTexture(armedPatch),
+      transparent: true,
+      depthTest: true,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -6,
+      roughness: 0.8,
+      metalness: 0.0,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.renderOrder = 2;
+    scene.add(mesh);
+    const rec = { mesh, point, orientation, size, src: armedPatch, target };
+    decals.push(rec);
+    selectDecal(rec);
+    saveState();
+  }
+
+  function selectDecal(rec) {
+    if (selDecal) selDecal.mesh.material.emissive?.setHex(0x000000);
+    selDecal = rec;
+    if (rec) {
+      rec.mesh.material.emissive = new THREE.Color(0x1a2a00);
+      stickSize.value = Math.round(70 * (rec.size / (modelScale * 0.16)));
+    }
+  }
+
+  function resizeSelected() {
+    if (!selDecal) return;
+    const newSize = sliderToSize();
+    selDecal.size = newSize;
+    selDecal.mesh.geometry.dispose();
+    selDecal.mesh.geometry = buildDecalGeometry(selDecal.target, selDecal.point, selDecal.orientation, newSize);
+    saveState();
+  }
+
+  function deleteDecal(rec) {
+    const i = decals.indexOf(rec);
+    if (i >= 0) decals.splice(i, 1);
+    scene.remove(rec.mesh);
+    rec.mesh.geometry.dispose();
+    if (selDecal === rec) selDecal = null;
+    saveState();
+  }
+
+  function clearDecals() {
+    decals.splice(0).forEach(d => { scene.remove(d.mesh); d.mesh.geometry.dispose(); });
+    selDecal = null;
+    saveState();
+  }
+
+  // ---- pointer: tap = place/select, drag = orbit ----
+  let down = null;
+  renderer.domElement.addEventListener('pointerdown', (e) => {
+    down = { x: e.clientX, y: e.clientY, t: Date.now() };
+    controls.autoRotate = false;
+  });
+  renderer.domElement.addEventListener('pointerup', (e) => {
+    if (!down) return;
+    const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+    const tap = moved < 6 && (Date.now() - down.t) < 400;
+    down = null;
+    if (!tap) return;
+    const hitDecal = intersectDecals(e);
+    if (hitDecal) { selectDecal(decals.find(d => d.mesh === hitDecal)); return; }
+    if (armedPatch) {
+      const hit = intersectModel(e);
+      if (hit) placeDecal(hit);
+      else { stickHint.textContent = 'Жинсэн дээр товшино уу 👖'; }
+    } else {
+      selectDecal(null);
+    }
+  });
+
+  // ================= UI WIRING =================
+  const types    = document.getElementById('types');
+  const swatches = document.getElementById('swatches');
+  const patchesEl= document.getElementById('patches');
+  const stickSize= document.getElementById('stickSize');
+  const stickHint= document.getElementById('stickHint');
+  const PATCH_COUNT = 30;
+
   types.addEventListener('click', (e) => {
     const t = e.target.closest('.v3d-type');
     if (!t || t.classList.contains('active')) return;
     [...types.children].forEach(b => b.classList.remove('active'));
     t.classList.add('active');
     currentType = t.dataset.type;
-    viewer.dataset.fellBack = '';
-    clearStickers();              // geometry changes → drop placed stickers
-    viewer.src = t.dataset.src;   // fetched now, not at page load
-    saveChoice();
+    loadModel(t.dataset.src);
+    saveState();
   });
 
-  // Colour swap via the scene-graph material API
   swatches.addEventListener('click', (e) => {
     const sw = e.target.closest('.swatch');
     if (!sw) return;
     [...swatches.children].forEach(s => s.classList.remove('active'));
     sw.classList.add('active');
-    currentColor = sw.dataset.color;
-    applyColor(currentColor);
-    saveChoice();
+    applyColor(sw.dataset.color);
   });
 
-  function applyColor(hex) {
-    const c = hexToRgb(hex);
-    const mats = viewer.model && viewer.model.materials;
-    if (mats && mats.length) {
-      mats.forEach(m => {
-        try { m.pbrMetallicRoughness.setBaseColorFactor([c.r, c.g, c.b, 1]); } catch (_) {}
-      });
-    }
-  }
-
-  // Fallback if a model fails to load
-  viewer.addEventListener('error', () => {
-    if (viewer.dataset.fellBack) return;
-    viewer.dataset.fellBack = '1';
-    console.warn('3D model load error, type:', currentType);
-  });
-
-  /* ============ STICKER PLACEMENT ============ */
-  const patchesEl = document.getElementById('patches');
-  const sizeEl    = document.getElementById('stickSize');
-  const hintEl    = document.getElementById('stickHint');
-  const PATCH_COUNT = 30;
-  let armedPatch = null;   // src of the patch currently "in hand"
-  let selSticker = null;   // currently selected placed sticker
-  let stickId = 0;
-
-  // Build the patch thumbnail strip
   for (let i = 1; i <= PATCH_COUNT; i++) {
     const src = `assets/patterns/p${i}.webp?v=3`;
     const b = document.createElement('button');
-    b.className = 'v3d-patch';
-    b.dataset.src = src;
+    b.className = 'v3d-patch'; b.dataset.src = src;
     b.style.backgroundImage = `url(${src})`;
     patchesEl.appendChild(b);
   }
 
-  // Arm / disarm a patch
   patchesEl.addEventListener('click', (e) => {
     const p = e.target.closest('.v3d-patch');
     if (!p) return;
     const already = p.classList.contains('armed');
     [...patchesEl.children].forEach(x => x.classList.remove('armed'));
-    if (already) { armedPatch = null; setArmedUI(false); }
-    else { p.classList.add('armed'); armedPatch = p.dataset.src; setArmedUI(true); }
+    if (already) { armedPatch = null; armedUI(false); }
+    else { p.classList.add('armed'); armedPatch = p.dataset.src; armedUI(true); }
   });
 
-  function setArmedUI(on) {
+  function armedUI(on) {
     if (on) {
-      viewer.removeAttribute('auto-rotate');
-      viewer.style.cursor = 'crosshair';
-      hintEl.textContent = 'Жинс дээр товшиж наалтыг байрлуул';
-      hintEl.style.color = 'var(--accent)';
+      controls.autoRotate = false;
+      renderer.domElement.style.cursor = 'crosshair';
+      stickHint.textContent = 'Жинс дээр товшиж наалтыг наана';
+      stickHint.style.color = 'var(--accent)';
     } else {
-      viewer.style.cursor = '';
-      hintEl.textContent = 'Наалт дараад → жинс дээр товшиж байрлуул';
-      hintEl.style.color = '';
+      renderer.domElement.style.cursor = '';
+      stickHint.textContent = 'Наалт дараад → жинс дээр товшиж наана';
+      stickHint.style.color = '';
     }
   }
 
-  // Tap-vs-drag: a real tap (no orbit) places / selects
-  let down = null;
-  viewer.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
-  viewer.addEventListener('pointerup', (e) => {
-    if (!down) return;
-    const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
-    const tap = moved < 6 && (Date.now() - down.t) < 400;
-    down = null;
-    if (!tap) return;
-    if (e.target.closest('.v3d-sticker')) return;   // sticker handles its own click
-    if (armedPatch) placeSticker(e.clientX, e.clientY);
-    else selectSticker(null);
-  });
-
-  function placeSticker(cx, cy) {
-    const hit = viewer.positionAndNormalFromPoint(cx, cy);
-    if (!hit) { hintEl.textContent = 'Жинсэн дээр товшино уу 👖'; return; }
-    const id = 'st' + (stickId++);
-    const el = document.createElement('button');
-    el.className = 'v3d-sticker';
-    el.slot = 'hotspot-' + id;
-    el.dataset.position = hit.position.toString();
-    el.dataset.normal   = hit.normal.toString();
-    el.dataset.src      = armedPatch;
-    el.style.backgroundImage = `url(${armedPatch})`;
-    const sz = sizeEl.value + 'px';
-    el.style.width = sz; el.style.height = sz;
-    el.addEventListener('click', (ev) => { ev.stopPropagation(); selectSticker(el); });
-    viewer.appendChild(el);
-    selectSticker(el);
-    saveStickers();
-  }
-
-  function selectSticker(el) {
-    if (selSticker) selSticker.classList.remove('sel');
-    selSticker = el;
-    if (el) { el.classList.add('sel'); sizeEl.value = parseInt(el.style.width) || 60; }
-  }
-
-  // Resize the selected sticker
-  sizeEl.addEventListener('input', () => {
-    if (!selSticker) return;
-    const s = sizeEl.value + 'px';
-    selSticker.style.width = s; selSticker.style.height = s;
-    saveStickers();
-  });
-
-  // Clear all
-  document.getElementById('stickClear').addEventListener('click', clearStickers);
-  function clearStickers() {
-    viewer.querySelectorAll('.v3d-sticker').forEach(s => s.remove());
-    selSticker = null;
-    saveStickers();
-  }
-
-  // Delete the selected one with keyboard
+  stickSize.addEventListener('input', resizeSelected);
+  document.getElementById('stickClear').addEventListener('click', clearDecals);
   document.addEventListener('keydown', (e) => {
-    if ((e.key === 'Delete' || e.key === 'Backspace') && selSticker) {
-      selSticker.remove(); selSticker = null; saveStickers();
-    }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selDecal) deleteDecal(selDecal);
   });
 
-  function saveStickers() {
-    const list = [...viewer.querySelectorAll('.v3d-sticker')].map(s => ({
-      src: s.dataset.src, pos: s.dataset.position, nor: s.dataset.normal, size: parseInt(s.style.width)
-    }));
-    try { localStorage.setItem('ji_3d_stickers', JSON.stringify({ type: currentType, stickers: list })); } catch (_) {}
+  function saveState() {
+    try {
+      localStorage.setItem('ji_3d_state', JSON.stringify({
+        type: currentType, color: currentColor,
+        stickers: decals.map(d => ({ src: d.src, size: d.size,
+          point: d.point.toArray(), rot: [d.orientation.x, d.orientation.y, d.orientation.z] }))
+      }));
+    } catch (_) {}
   }
 
-  // Persist the choice so the next step (catalog/order) can read it
-  function saveChoice() {
-    try { localStorage.setItem('ji_fit', JSON.stringify({ type: currentType, color: currentColor })); } catch (_) {}
+  // ---- resize / render loop ----
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
   }
+  window.addEventListener('resize', resize);
+  resize();
 
-  function hexToRgb(hex) {
-    const n = parseInt(hex.slice(1), 16);
-    return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 };
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
   }
+  animate();
+
+  // boot
+  loadModel('assets/models/jeans-skinny.glb?v=1');
 </script>
 <script src="js/main.js?v=5"></script>
 </body>
