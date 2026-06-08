@@ -179,18 +179,11 @@
     }
   }
 
-  // If a model file is missing (e.g. Wide not added yet), tell the user
+  // Fallback if a model fails to load
   viewer.addEventListener('error', () => {
     if (viewer.dataset.fellBack) return;
     viewer.dataset.fellBack = '1';
-    if (currentType === 'wide') {
-      alert('Wide загвар одоохондоо бэлэн болоогүй байна. Skinny-г үзнэ үү.');
-      const skinnyBtn = types.querySelector('[data-type="skinny"]');
-      types.querySelectorAll('.v3d-type').forEach(b => b.classList.remove('active'));
-      skinnyBtn.classList.add('active');
-      currentType = 'skinny';
-      viewer.src = skinnyBtn.dataset.src;
-    }
+    console.warn('3D model load error, type:', currentType);
   });
 
   // Persist the choice so the next step (catalog/order) can read it
