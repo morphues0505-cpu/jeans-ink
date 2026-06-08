@@ -114,14 +114,14 @@
     <!-- Step 1: pants fit -->
     <p class="v3d-label">1 · Загвар сонгох</p>
     <div class="v3d-types" id="types">
-      <button class="v3d-type active" data-type="skinny" data-src="assets/models/jeans-skinny.glb?v=1">
+      <button class="v3d-type active" data-type="skinny" data-src="assets/models/jeans-skinny.glb?v=2">
         <svg width="36" height="54" viewBox="0 0 36 54" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M8 0 L28 0 L30 2 L26 26 L28 54 L20 54 L18 32 L16 54 L8 54 L10 26 L6 2 Z" fill="#aaa"/>
           <rect x="6" y="2" width="24" height="4" rx="2" fill="#888"/>
         </svg>
         SKINNY
       </button>
-      <button class="v3d-type" data-type="wide" data-src="assets/models/jeans-wide.glb?v=2">
+      <button class="v3d-type" data-type="wide" data-src="assets/models/jeans-wide.glb?v=3">
         <svg width="50" height="54" viewBox="0 0 50 54" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M6 0 L44 0 L46 2 L38 26 L44 54 L30 54 L25 34 L20 54 L6 54 L12 26 L4 2 Z" fill="#aaa"/>
           <rect x="4" y="2" width="42" height="4" rx="2" fill="#888"/>
@@ -133,7 +133,7 @@
     <!-- Step 2: colour -->
     <p class="v3d-label">2 · Өнгө сонгох</p>
     <div class="v3d-controls" id="swatches">
-      <span class="swatch" data-color="#f0f0f0" style="background:#f0f0f0;border-color:#ccc" title="White"></span>
+      <span class="swatch" data-color="#ffffff" style="background:#ffffff;border-color:#ccc" title="White"></span>
       <span class="swatch" data-color="#888888" style="background:#888888" title="Gray"></span>
       <span class="swatch active" data-color="#1a1a1a" style="background:#1a1a1a" title="Black"></span>
       <span class="swatch" data-color="#a8c4d4" style="background:#a8c4d4" title="Light Blue"></span>
@@ -145,7 +145,7 @@
     <p class="v3d-label">3 · Наалт сонгож, байрлуулах</p>
     <div class="v3d-patches" id="patches"></div>
     <div class="v3d-toolbar">
-      <label>Хэмжээ <input type="range" id="stickSize" min="30" max="140" value="70"></label>
+      <label>Хэмжээ <input type="range" id="stickSize" min="20" max="200" value="70"></label>
       <button id="stickClear">Бүгдийг арилгах</button>
     </div>
     <p class="v3d-hint" id="stickHint">Наалт дараад → жинс дээр товшиж наана</p>
@@ -478,7 +478,7 @@
   animate();
 
   // boot
-  loadModel('assets/models/jeans-skinny.glb?v=1');
+  loadModel('assets/models/jeans-skinny.glb?v=2');
 </script>
 <script src="js/main.js?v=5"></script>
 </body>
