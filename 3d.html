@@ -426,7 +426,7 @@
     if (!selDecal) return;
     movingRec = movingRec ? null : selDecal;        // toggle move mode
     moveBtn.classList.toggle('on', !!movingRec);
-    stickHint.textContent = movingRec ? 'Шинэ байрлал дээр товш' : 'Наалт дараад → жинс дээр товш';
+    stickHint.textContent = movingRec ? 'Жинс дээр дараад чирж зөө · дуусахад ✋ дахин дар' : 'Наалт дараад → жинс дээр товш';
     stickHint.style.color = movingRec ? 'var(--accent)' : '';
   });
   decalUI.querySelector('.b-del').addEventListener('click',   (e) => { e.stopPropagation(); if (selDecal) deleteDecal(selDecal); });
@@ -469,6 +469,13 @@
     if (e.target !== canvas) return;          // only when the click is on the 3D canvas
     down = { x: e.clientX, y: e.clientY, t: Date.now() };
     controls.autoRotate = false;
+    if (movingRec) {                          // move mode ON: grab & follow immediately
+      dragRec = movingRec;
+      controls.enabled = false;
+      const hit = intersectModel(e);
+      if (hit) moveDecal(movingRec, hit);     // jump to the touched point at once
+      return;
+    }
     if (!armedPatch) {
       const hitDecal = intersectDecals(e);
       if (hitDecal) {
