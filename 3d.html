@@ -424,12 +424,23 @@
   moveBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     if (!selDecal) return;
-    movingRec = movingRec ? null : selDecal;        // toggle move mode
-    moveBtn.classList.toggle('on', !!movingRec);
-    stickHint.textContent = movingRec ? 'Жинс дээр дараад чирж зөө · дуусахад ✋ дахин дар' : 'Наалт дараад → жинс дээр товш';
-    stickHint.style.color = movingRec ? 'var(--accent)' : '';
+    if (movingRec) { exitMoveMode(); return; }       // toggle OFF
+    movingRec = selDecal;                            // toggle ON
+    moveBtn.classList.add('on');
+    stickHint.textContent = 'Жинс дээр дараад чирж зөө · дуусахад ✋ дахин дар';
+    stickHint.style.color = 'var(--accent)';
   });
   decalUI.querySelector('.b-del').addEventListener('click',   (e) => { e.stopPropagation(); if (selDecal) deleteDecal(selDecal); });
+
+  // leave move mode and hand control back to the camera
+  function exitMoveMode() {
+    movingRec = null;
+    dragRec = null;
+    controls.enabled = true;
+    if (moveBtn) moveBtn.classList.remove('on');
+    stickHint.textContent = 'Наалт дараад → жинс дээр товш · чирж зөөнө · дээрх − + товчоор тохируул';
+    stickHint.style.color = '';
+  }
 
   function deleteDecal(rec) {
     const i = decals.indexOf(rec);
@@ -437,12 +448,14 @@
     scene.remove(rec.mesh);
     rec.mesh.geometry.dispose();
     if (selDecal === rec) selDecal = null;
+    if (movingRec === rec || dragRec === rec) exitMoveMode();   // never leave orbit locked
     saveState();
   }
 
   function clearDecals() {
     decals.splice(0).forEach(d => { scene.remove(d.mesh); d.mesh.geometry.dispose(); });
     selDecal = null;
+    exitMoveMode();
     saveState();
   }
 
@@ -494,23 +507,15 @@
 
   window.addEventListener('pointerup', (e) => {
     const wasDragging = !!dragRec;
-    if (dragRec) { dragRec = null; controls.enabled = true; }
+    dragRec = null;
+    if (!movingRec) controls.enabled = true;   // any sticker-drag ended → camera free again
     if (!down) return;
     const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
     const tap = moved < 6 && (Date.now() - down.t) < 400;
     down = null;
     if (wasDragging) return;                   // it was a move, not a tap
     if (!tap) return;
-    // move-mode: relocate the selected sticker to the tapped spot
-    if (movingRec) {
-      const hit = intersectModel(e);
-      if (hit) moveDecal(movingRec, hit);
-      movingRec = null;
-      moveBtn.classList.remove('on');
-      stickHint.textContent = 'Наалт дараад → жинс дээр товш';
-      stickHint.style.color = '';
-      return;
-    }
+    if (movingRec) return;                      // in move mode the drag/tap already relocated it
     const hitDecal = intersectDecals(e);
     if (hitDecal) { selectDecal(decals.find(d => d.mesh === hitDecal)); return; }
     if (armedPatch) {
