@@ -74,7 +74,7 @@
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="catalog.html">Catalog</a></li>
-      <li><a href="mockup.html">Try On</a></li>
+      <li><a href="3d.html">Try On</a></li>
       <li><a href="how-it-works.html">Process</a></li>
       <li><a href="track.html">Track</a></li>
       <li><a href="order.html" class="nav-cta">Order Now</a></li>
@@ -85,7 +85,7 @@
 <div class="nav-mobile" id="navMobile">
   <a href="index.html">Home</a>
   <a href="catalog.html">Catalog</a>
-  <a href="mockup.html">Try On</a>
+  <a href="3d.html">Try On</a>
   <a href="how-it-works.html">Process</a>
   <a href="track.html">Track Order</a>
   <a href="order.html">Order Now →</a>
@@ -98,7 +98,7 @@
     <h1 style="font-size:clamp(2rem,5vw,3.5rem)">Pick your pattern</h1>
     <p style="color:var(--text-muted);margin-top:14px;max-width:520px;line-height:1.7">
       Дуртай хээгээ сонгоод <b style="color:var(--text)">Try On</b> дээр өөрийн jeans дээрээ тавь.
-      Хэдэн ч pattern сонгож болно.
+      Нэг дор 4 хүртэл хээ сонгож болно.
     </p>
   </div>
 </div>
@@ -198,7 +198,7 @@ document.getElementById('tryOnBtn').addEventListener('click', () => {
   if (!selected.size) return;
   const list = [...selected].map(id => `assets/patterns/${id}.webp?v=3`);
   try { localStorage.setItem('ji_patterns', JSON.stringify(list)); } catch (e) {}
-  location.href = 'mockup.html';
+  location.href = '3d.html';
 });
 </script>
 </body>
