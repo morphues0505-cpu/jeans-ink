@@ -567,6 +567,20 @@
     patchesEl.appendChild(b);
   }
 
+  // Patterns chosen on the Catalog page → pre-arm the first one here
+  (function fromCatalog() {
+    let sel = [];
+    try { sel = JSON.parse(localStorage.getItem('ji_patterns') || '[]'); } catch (_) {}
+    localStorage.removeItem('ji_patterns');
+    if (!sel.length) return;
+    const firstId = (sel[0].match(/p\d+/) || [])[0];   // e.g. "p5"
+    const btn = [...patchesEl.children].find(b => b.dataset.src.includes(firstId + '.webp'));
+    if (btn) {
+      btn.classList.add('armed'); armedPatch = btn.dataset.src; armedUI(true);
+      patchesEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  })();
+
   patchesEl.addEventListener('click', (e) => {
     const p = e.target.closest('.v3d-patch');
     if (!p) return;

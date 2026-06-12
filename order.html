@@ -168,6 +168,16 @@
   </div>
 </div>
 
+<!-- ── TRUST BAR ── -->
+<div style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="container" style="display:flex;flex-wrap:wrap;justify-content:center;gap:14px 34px;padding:16px 0;font-family:'Montserrat',sans-serif;font-size:.76rem">
+    <span style="display:flex;align-items:center;gap:8px;color:var(--text-muted)"><b style="color:var(--accent)">⚡</b> 2–3 хоногт бэлэн</span>
+    <span style="display:flex;align-items:center;gap:8px;color:var(--text-muted)"><b style="color:var(--accent)">🌊</b> 50+ угаалга тэсвэртэй</span>
+    <span style="display:flex;align-items:center;gap:8px;color:var(--text-muted)"><b style="color:var(--accent)">✋</b> Гар хийц · Улаанбаатар</span>
+    <span style="display:flex;align-items:center;gap:8px;color:var(--text-muted)"><b style="color:var(--accent)">🎯</b> 3D дээр түршиж хар</span>
+  </div>
+</div>
+
 <section class="section">
   <div class="container">
     <div class="two-col">
@@ -260,24 +270,43 @@
       <!-- SIDEBAR -->
       <div class="sidebar">
 
-        <!-- Pricing -->
+        <!-- Price calculator -->
         <div>
-          <p class="tag mono" style="display:block;margin-bottom:16px">— Үнийн жагсаалт</p>
-          <div class="pricing-table">
-            <div class="pricing-row">
-              <div>
-                <div class="pricing-label">A4 Patch</div>
-                <div style="font-size:0.72rem;color:var(--text-dim);margin-top:2px">21 × 29.7 cm</div>
-              </div>
-              <div class="pricing-value gold">49,000₮</div>
+          <p class="tag mono" style="display:block;margin-bottom:16px">— Үнэ тооцоологч</p>
+          <div class="pricing-table" style="padding:20px">
+            <div style="display:flex;gap:10px;margin-bottom:18px">
+              <button type="button" class="calc-size active" data-size="A4" data-price="49000"
+                style="flex:1;border:1px solid var(--accent);background:var(--accent-dim);border-radius:10px;padding:12px;cursor:pointer;color:var(--text);text-align:left">
+                <div style="font-weight:700">A4</div>
+                <div style="font-size:.68rem;color:var(--text-dim)">21 × 29.7 cm</div>
+                <div class="gold" style="font-size:.85rem;margin-top:4px">49,000₮</div>
+              </button>
+              <button type="button" class="calc-size" data-size="A3" data-price="79000"
+                style="flex:1;border:1px solid var(--border-2);background:var(--bg);border-radius:10px;padding:12px;cursor:pointer;color:var(--text);text-align:left">
+                <div style="font-weight:700">A3</div>
+                <div style="font-size:.68rem;color:var(--text-dim)">29.7 × 42 cm</div>
+                <div class="gold" style="font-size:.85rem;margin-top:4px">79,000₮</div>
+              </button>
             </div>
-            <div class="pricing-row">
-              <div>
-                <div class="pricing-label">A3 Patch</div>
-                <div style="font-size:0.72rem;color:var(--text-dim);margin-top:2px">29.7 × 42 cm</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <span style="font-size:.85rem">Тоо ширхэг</span>
+              <div style="display:flex;align-items:center;gap:14px">
+                <button type="button" id="qMinus" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--text);font-size:18px;cursor:pointer">−</button>
+                <span id="qVal" style="min-width:20px;text-align:center;font-weight:700">1</span>
+                <button type="button" id="qPlus" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--text);font-size:18px;cursor:pointer">+</button>
               </div>
-              <div class="pricing-value gold">79,000₮</div>
             </div>
+            <div id="calcBundle" style="display:none;justify-content:space-between;font-size:.8rem;color:var(--accent);margin-bottom:10px">
+              <span>Багц хямдрал</span><b id="calcDisc">0₮</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:14px">
+              <span style="font-size:.85rem">Нийт</span>
+              <b id="calcTotal" class="gold" style="font-size:1.3rem">49,000₮</b>
+            </div>
+            <a href="#" data-social="facebook" id="calcOrder" class="btn btn-primary" style="width:100%;margin-top:16px;justify-content:center">
+              Энэ үнээр захиалах →
+            </a>
+            <p style="font-size:.68rem;color:var(--text-dim);margin-top:10px;text-align:center">2+ A4 авбал тус бүр 8,000₮ хямдарна · Урьдчилгаа 20,000₮</p>
           </div>
         </div>
 
@@ -374,5 +403,34 @@
 </footer>
 
 <script src="js/main.js?v=5"></script>
+<script>
+  // ── Price calculator ──
+  (function () {
+    const sizes = document.querySelectorAll('.calc-size');
+    const qVal = document.getElementById('qVal');
+    const totalEl = document.getElementById('calcTotal');
+    const bundleEl = document.getElementById('calcBundle');
+    const discEl = document.getElementById('calcDisc');
+    if (!sizes.length || !qVal) return;
+    let size = 'A4', price = 49000, qty = 1;
+    const fmt = n => n.toLocaleString() + '₮';
+
+    function render() {
+      let total = price * qty, disc = 0;
+      if (size === 'A4' && qty >= 2) { disc = Math.floor(qty / 2) * 8000; total -= disc; }  // 2× A4 bundle
+      bundleEl.style.display = disc > 0 ? 'flex' : 'none';
+      if (disc > 0) discEl.textContent = '−' + fmt(disc);
+      totalEl.textContent = fmt(total);
+    }
+    sizes.forEach(b => b.addEventListener('click', () => {
+      sizes.forEach(x => { x.classList.remove('active'); x.style.borderColor = 'var(--border-2)'; x.style.background = 'var(--bg)'; });
+      b.classList.add('active'); b.style.borderColor = 'var(--accent)'; b.style.background = 'var(--accent-dim)';
+      size = b.dataset.size; price = parseInt(b.dataset.price, 10); render();
+    }));
+    document.getElementById('qMinus').addEventListener('click', () => { qty = Math.max(1, qty - 1); qVal.textContent = qty; render(); });
+    document.getElementById('qPlus').addEventListener('click', () => { qty = Math.min(20, qty + 1); qVal.textContent = qty; render(); });
+    render();
+  })();
+</script>
 </body>
 </html>
