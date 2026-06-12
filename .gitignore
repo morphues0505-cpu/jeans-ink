@@ -3,3 +3,9 @@
 Thumbs.db
 *.log
 **/_src/
+
+# working source models / stray assets (not shipped)
+assets/models/jnco_twin_cannon_baggy_jeans.glb
+assets/15d8185c-*.png
+assets/STAR.png
+assets/TETE.png
