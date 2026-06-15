@@ -63,6 +63,27 @@
     .select-count { font-family: 'Montserrat', sans-serif; font-size: .85rem; }
     .select-count b { color: var(--accent); transition: color .2s; }
     .select-count b.limit { color: #FF5A3C; }
+
+    /* big section headings */
+    .cat-section { margin-bottom: 64px; }
+    .cat-section-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
+    .cat-section-head h2 { font-size:clamp(1.5rem,4vw,2.4rem); line-height:1.1; }
+    .cat-section-head .pill {
+      font-family:'Montserrat',sans-serif; font-size:.62rem; font-weight:700; letter-spacing:.12em;
+      text-transform:uppercase; padding:5px 12px; border-radius:999px;
+      background:var(--accent); color:#0D0D0D;
+    }
+    .cat-section-sub { color:var(--text-muted); font-size:.88rem; margin-bottom:22px; max-width:600px; line-height:1.6; }
+    /* A3 sheet tiles (display only) */
+    .a3-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; }
+    .a3-tile { aspect-ratio:3/4; border-radius:12px; overflow:hidden; border:1px solid var(--border);
+      background:#FEF9F5; }
+    .a3-tile img { width:100%; height:100%; object-fit:cover; display:block; }
+    /* coming soon */
+    .soon-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; }
+    .soon-tile { aspect-ratio:1; border-radius:12px; border:1px dashed var(--border-2);
+      display:flex; align-items:center; justify-content:center; color:var(--text-dim);
+      background:var(--bg-2); font-size:1.8rem; }
   </style>
 </head>
 <body class="theme-dark">
@@ -94,19 +115,49 @@
 <!-- HERO -->
 <div class="catalog-hero">
   <div class="container">
-    <span class="tag mono" style="display:block;margin-bottom:12px">— Patterns / Tribal Geometry</span>
-    <h1 style="font-size:clamp(2rem,5vw,3.5rem)">Pick your pattern</h1>
-    <p style="color:var(--text-muted);margin-top:14px;max-width:520px;line-height:1.7">
-      Дуртай хээгээ сонгоод <b style="color:var(--text)">Try On</b> дээр өөрийн jeans дээрээ тавь.
-      Нэг дор 4 хүртэл хээ сонгож болно.
+    <span class="tag mono" style="display:block;margin-bottom:12px">— Catalog</span>
+    <h1 style="font-size:clamp(2rem,5vw,3.5rem)">Наалтын сан</h1>
+    <p style="color:var(--text-muted);margin-top:14px;max-width:560px;line-height:1.7">
+      Доорх наалтуудаа <b style="color:var(--text)">TRY ON</b> дээр өөрийн jeans дээрээ туршиж үзээрэй.
+      Удахгүй өөрийн зургаар <b style="color:var(--text)">custom дизайн</b> хийх боломж нэмэгдэнэ.
     </p>
   </div>
 </div>
 
-<!-- PATTERN GRID -->
+<!-- CATALOG SECTIONS -->
 <section class="section" style="padding-bottom:120px">
   <div class="container">
-    <div id="patGrid"></div>
+
+    <!-- 1 · TRY-ON STICKERS -->
+    <div class="cat-section">
+      <div class="cat-section-head">
+        <h2>TRY ON наалтууд</h2>
+        <span class="pill">Туршиж болно</span>
+      </div>
+      <p class="cat-section-sub">Эдгээр наалтыг <b style="color:var(--text)">TRY ON дээр jeans дээрээ шууд нааж</b>, эргүүлж, томруулж туршина уу. Дуртайгаа сонгоод доороос Try On дээр оч.</p>
+      <div class="pat-grid" id="songohGrid"></div>
+    </div>
+
+    <!-- 2 · RANDOM A3 STICKERS -->
+    <div class="cat-section">
+      <div class="cat-section-head">
+        <h2>RANDOM A3 STICKERS</h2>
+        <span class="pill" style="background:var(--border-2);color:var(--text)">DM-р захиал</span>
+      </div>
+      <p class="cat-section-sub">A3 хэмжээний бэлэн sticker хуудаснууд. Таалагдсанаа Messenger-ээр захиална уу.</p>
+      <div class="a3-grid" id="a3Grid"></div>
+    </div>
+
+    <!-- 3 · CUSTOM DESIGNER STICKERS -->
+    <div class="cat-section">
+      <div class="cat-section-head">
+        <h2>CUSTOM DESIGNER STICKERS</h2>
+        <span class="pill" style="background:#0D0D0D;color:var(--accent);border:1px solid var(--accent)">SOON…</span>
+      </div>
+      <p class="cat-section-sub">Өөрийн зураг, лого, санаагаар дизайнераар тусгай наалт хийлгэх боломж <b style="color:var(--accent)">удахгүй</b> нээгдэнэ.</p>
+      <div class="soon-grid" id="soonGrid"></div>
+    </div>
+
   </div>
 </section>
 
@@ -154,40 +205,32 @@
   </div>
 </footer>
 
-<script src="js/patterns.js?v=1"></script>
 <script src="js/main.js?v=5"></script>
 <script>
-const GROUPS = window.PATTERN_GROUPS || [];
+const SONGOH_COUNT = 39;   // assets/songoh/s1..sN.webp
+const A3_COUNT     = 31;   // assets/catalogy/a1..aN.webp
+const SOON_COUNT   = 6;
 
 const selected = new Set();
-const grid = document.getElementById('patGrid');
 const bar = document.getElementById('selectBar');
 const selCount = document.getElementById('selCount');
 
-grid.innerHTML = GROUPS.map(g => `
-  <div style="margin-bottom:14px;margin-top:8px"><span class="tag mono">— ${g.cat}</span></div>
-  <div class="pat-grid" style="margin-bottom:48px">
-    ${g.items.map(p => `
-      <div class="pat-tile" data-id="${p.id}">
-        <img src="assets/patterns/${p.id}.webp?v=3" alt="${p.name}" loading="lazy">
-        <span class="pat-name">${p.name}</span>
-        <span class="pat-check">✓</span>
-      </div>`).join('')}
-  </div>
-`).join('');
+// 1 · TRY-ON stickers (selectable → carried into 3D Try On)
+const songohGrid = document.getElementById('songohGrid');
+let html = '';
+for (let i = 1; i <= SONGOH_COUNT; i++) {
+  const src = `assets/songoh/s${i}.webp`;
+  html += `<div class="pat-tile" data-src="${src}"><img src="${src}" alt="Sticker ${i}" loading="lazy"><span class="pat-check">✓</span></div>`;
+}
+songohGrid.innerHTML = html;
 
-grid.querySelectorAll('.pat-tile').forEach(tile => {
+songohGrid.querySelectorAll('.pat-tile').forEach(tile => {
   tile.addEventListener('click', () => {
-    const id = tile.dataset.id;
-    if (selected.has(id)) {
-      selected.delete(id); tile.classList.remove('sel');
-    } else {
-      if (selected.size >= 4) {            // max 4
-        selCount.classList.add('limit');
-        setTimeout(() => selCount.classList.remove('limit'), 500);
-        return;
-      }
-      selected.add(id); tile.classList.add('sel');
+    const src = tile.dataset.src;
+    if (selected.has(src)) { selected.delete(src); tile.classList.remove('sel'); }
+    else {
+      if (selected.size >= 4) { selCount.classList.add('limit'); setTimeout(() => selCount.classList.remove('limit'), 500); return; }
+      selected.add(src); tile.classList.add('sel');
     }
     selCount.textContent = selected.size + ' / 4';
     bar.classList.toggle('show', selected.size > 0);
@@ -196,10 +239,21 @@ grid.querySelectorAll('.pat-tile').forEach(tile => {
 
 document.getElementById('tryOnBtn').addEventListener('click', () => {
   if (!selected.size) return;
-  const list = [...selected].map(id => `assets/patterns/${id}.webp?v=3`);
-  try { localStorage.setItem('ji_patterns', JSON.stringify(list)); } catch (e) {}
+  try { localStorage.setItem('ji_patterns', JSON.stringify([...selected])); } catch (e) {}
   location.href = '3d.html';
 });
+
+// 2 · RANDOM A3 sticker sheets (display only)
+const a3Grid = document.getElementById('a3Grid');
+let a3 = '';
+for (let i = 1; i <= A3_COUNT; i++) {
+  a3 += `<div class="a3-tile"><img src="assets/catalogy/a${i}.webp" alt="A3 sticker sheet ${i}" loading="lazy"></div>`;
+}
+a3Grid.innerHTML = a3;
+
+// 3 · Custom designer — coming soon placeholders
+const soonGrid = document.getElementById('soonGrid');
+soonGrid.innerHTML = Array.from({length: SOON_COUNT}, () => `<div class="soon-tile">🔒</div>`).join('');
 </script>
 </body>
 </html>

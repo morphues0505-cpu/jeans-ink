@@ -539,7 +539,7 @@
   const patchesEl= document.getElementById('patches');
   const stickSize= document.getElementById('stickSize');
   const stickHint= document.getElementById('stickHint');
-  const PATCH_COUNT = 30;
+  const PATCH_COUNT = 39;   // SONGOH stickers: assets/songoh/s1..sN.webp
 
   types.addEventListener('click', (e) => {
     const t = e.target.closest('.v3d-type');
@@ -560,20 +560,20 @@
   });
 
   for (let i = 1; i <= PATCH_COUNT; i++) {
-    const src = `assets/patterns/p${i}.webp?v=3`;
+    const src = `assets/songoh/s${i}.webp`;
     const b = document.createElement('button');
     b.className = 'v3d-patch'; b.dataset.src = src;
     b.style.backgroundImage = `url(${src})`;
     patchesEl.appendChild(b);
   }
 
-  // Patterns chosen on the Catalog page → pre-arm the first one here
+  // Stickers chosen on the Catalog page → pre-arm the first one here
   (function fromCatalog() {
     let sel = [];
     try { sel = JSON.parse(localStorage.getItem('ji_patterns') || '[]'); } catch (_) {}
     localStorage.removeItem('ji_patterns');
     if (!sel.length) return;
-    const firstId = (sel[0].match(/p\d+/) || [])[0];   // e.g. "p5"
+    const firstId = (sel[0].match(/s\d+/) || [])[0];   // e.g. "s14"
     const btn = [...patchesEl.children].find(b => b.dataset.src.includes(firstId + '.webp'));
     if (btn) {
       btn.classList.add('armed'); armedPatch = btn.dataset.src; armedUI(true);
