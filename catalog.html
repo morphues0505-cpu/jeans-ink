@@ -77,8 +77,25 @@
     /* A3 sheet tiles (display only) */
     .a3-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; }
     .a3-tile { position:relative; aspect-ratio:3/4; border-radius:12px; overflow:hidden; border:1px solid var(--border);
-      background:#FEF9F5; }
+      background:#FEF9F5; cursor:zoom-in; transition:transform .2s, border-color .2s; }
+    .a3-tile:hover { transform:translateY(-3px); border-color:var(--accent); }
     .a3-tile img { width:100%; height:100%; object-fit:cover; display:block; }
+    .a3-num { position:absolute; top:8px; left:8px; z-index:2;
+      font-family:'Montserrat',sans-serif; font-weight:800; font-size:.66rem; letter-spacing:.04em;
+      background:rgba(13,13,13,.82); color:var(--accent); padding:4px 9px; border-radius:999px; }
+    /* lightbox */
+    .lb { position:fixed; inset:0; z-index:4000; background:rgba(8,8,10,.93); backdrop-filter:blur(6px);
+      display:none; align-items:center; justify-content:center; padding:30px; }
+    .lb.open { display:flex; }
+    .lb img { max-width:92vw; max-height:84vh; object-fit:contain; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.6); }
+    .lb-cap { position:absolute; top:22px; left:0; right:0; text-align:center; color:var(--accent);
+      font-family:'Montserrat',sans-serif; font-weight:800; letter-spacing:.1em; font-size:.9rem; }
+    .lb-x { position:absolute; top:18px; right:22px; width:42px; height:42px; border-radius:50%;
+      border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#fff; font-size:20px; cursor:pointer; }
+    .lb-nav { position:absolute; top:50%; transform:translateY(-50%); width:50px; height:50px; border-radius:50%;
+      border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); color:#fff; font-size:24px; cursor:pointer; }
+    .lb-prev { left:18px; } .lb-next { right:18px; }
+    @media(max-width:600px){ .lb-nav{ width:40px;height:40px;font-size:20px; } }
     /* coming soon */
     .soon-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; }
     .soon-tile { aspect-ratio:1; border-radius:12px; border:1px dashed var(--border-2);
@@ -205,6 +222,15 @@
   </div>
 </footer>
 
+<!-- LIGHTBOX -->
+<div class="lb" id="lb">
+  <div class="lb-cap" id="lbCap"></div>
+  <button class="lb-x" id="lbX" aria-label="Хаах">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Өмнөх">‹</button>
+  <img id="lbImg" alt="A3 sticker">
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Дараах">›</button>
+</div>
+
 <script src="js/main.js?v=5"></script>
 <script>
 const SONGOH_COUNT = 39;   // assets/songoh/s1..sN.webp
@@ -248,20 +274,48 @@ const ADMIN = localStorage.getItem('ji_admin') === '1';
 const a3Grid = document.getElementById('a3Grid');
 function loadCustomA3() { try { return JSON.parse(localStorage.getItem('ji_custom_a3') || '[]'); } catch (_) { return []; } }
 
+let a3List = [];   // [{ src, code }] in display order — used by the lightbox
 function renderA3() {
-  let a3 = '';
-  for (let i = 1; i <= A3_COUNT; i++) {
-    a3 += `<div class="a3-tile"><img src="assets/catalogy/a${i}.webp" alt="A3 sticker sheet ${i}" loading="lazy"></div>`;
-  }
-  loadCustomA3().forEach((src, i) =>
-    a3 += `<div class="a3-tile">${ADMIN ? `<button class="rm-a3" data-i="${i}" title="Хасах" style="position:absolute;top:6px;right:6px;width:22px;height:22px;border:none;border-radius:50%;background:#F0401E;color:#fff;cursor:pointer;z-index:2">✕</button>` : ''}<img src="${src}" alt="Custom A3 sticker" loading="lazy"></div>`);
-  a3Grid.innerHTML = a3;
-  if (ADMIN) a3Grid.querySelectorAll('.rm-a3').forEach(b => b.addEventListener('click', () => {
+  a3List = [];
+  for (let i = 1; i <= A3_COUNT; i++) a3List.push({ src: `assets/catalogy/a${i}.webp` });
+  loadCustomA3().forEach((src, i) => a3List.push({ src, custom: i }));
+  a3Grid.innerHTML = a3List.map((it, idx) => {
+    const code = '#' + String(idx + 1).padStart(3, '0');
+    const rm = (ADMIN && it.custom != null)
+      ? `<button class="rm-a3" data-i="${it.custom}" title="Хасах" style="position:absolute;top:6px;right:6px;width:22px;height:22px;border:none;border-radius:50%;background:#F0401E;color:#fff;cursor:pointer;z-index:3">✕</button>` : '';
+    return `<div class="a3-tile" data-idx="${idx}"><span class="a3-num">${code}</span>${rm}<img src="${it.src}" alt="A3 sticker ${code}" loading="lazy"></div>`;
+  }).join('');
+  a3Grid.querySelectorAll('.a3-tile').forEach(t => t.addEventListener('click', () => openLB(+t.dataset.idx)));
+  if (ADMIN) a3Grid.querySelectorAll('.rm-a3').forEach(b => b.addEventListener('click', (e) => {
+    e.stopPropagation();
     const arr = loadCustomA3(); arr.splice(+b.dataset.i, 1);
     localStorage.setItem('ji_custom_a3', JSON.stringify(arr)); renderA3();
   }));
 }
 renderA3();
+
+// ── Lightbox (zoom + prev/next) ──
+let lbIdx = 0;
+const lb = document.getElementById('lb');
+const lbImg = document.getElementById('lbImg');
+const lbCap = document.getElementById('lbCap');
+function openLB(idx) {
+  lbIdx = idx; const it = a3List[idx]; if (!it) return;
+  lbImg.src = it.src; lbCap.textContent = '#' + String(idx + 1).padStart(3, '0');
+  lb.classList.add('open');
+}
+function stepLB(d) { openLB((lbIdx + d + a3List.length) % a3List.length); }
+function closeLB() { lb.classList.remove('open'); lbImg.src = ''; }
+document.getElementById('lbX').addEventListener('click', closeLB);
+document.getElementById('lbPrev').addEventListener('click', (e) => { e.stopPropagation(); stepLB(-1); });
+document.getElementById('lbNext').addEventListener('click', (e) => { e.stopPropagation(); stepLB(1); });
+lb.addEventListener('click', (e) => { if (e.target === lb) closeLB(); });
+document.addEventListener('keydown', (e) => {
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLB();
+  if (e.key === 'ArrowLeft') stepLB(-1);
+  if (e.key === 'ArrowRight') stepLB(1);
+});
 
 // Admin: add A3 sticker sheets (stored in this browser; download+commit for public)
 if (ADMIN) {
