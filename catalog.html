@@ -76,7 +76,7 @@
     .cat-section-sub { color:var(--text-muted); font-size:.88rem; margin-bottom:22px; max-width:600px; line-height:1.6; }
     /* A3 sheet tiles (display only) */
     .a3-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; }
-    .a3-tile { aspect-ratio:3/4; border-radius:12px; overflow:hidden; border:1px solid var(--border);
+    .a3-tile { position:relative; aspect-ratio:3/4; border-radius:12px; overflow:hidden; border:1px solid var(--border);
       background:#FEF9F5; }
     .a3-tile img { width:100%; height:100%; object-fit:cover; display:block; }
     /* coming soon */
@@ -244,12 +244,50 @@ document.getElementById('tryOnBtn').addEventListener('click', () => {
 });
 
 // 2 · RANDOM A3 sticker sheets (display only)
+const ADMIN = localStorage.getItem('ji_admin') === '1';
 const a3Grid = document.getElementById('a3Grid');
-let a3 = '';
-for (let i = 1; i <= A3_COUNT; i++) {
-  a3 += `<div class="a3-tile"><img src="assets/catalogy/a${i}.webp" alt="A3 sticker sheet ${i}" loading="lazy"></div>`;
+function loadCustomA3() { try { return JSON.parse(localStorage.getItem('ji_custom_a3') || '[]'); } catch (_) { return []; } }
+
+function renderA3() {
+  let a3 = '';
+  for (let i = 1; i <= A3_COUNT; i++) {
+    a3 += `<div class="a3-tile"><img src="assets/catalogy/a${i}.webp" alt="A3 sticker sheet ${i}" loading="lazy"></div>`;
+  }
+  loadCustomA3().forEach((src, i) =>
+    a3 += `<div class="a3-tile">${ADMIN ? `<button class="rm-a3" data-i="${i}" title="Хасах" style="position:absolute;top:6px;right:6px;width:22px;height:22px;border:none;border-radius:50%;background:#F0401E;color:#fff;cursor:pointer;z-index:2">✕</button>` : ''}<img src="${src}" alt="Custom A3 sticker" loading="lazy"></div>`);
+  a3Grid.innerHTML = a3;
+  if (ADMIN) a3Grid.querySelectorAll('.rm-a3').forEach(b => b.addEventListener('click', () => {
+    const arr = loadCustomA3(); arr.splice(+b.dataset.i, 1);
+    localStorage.setItem('ji_custom_a3', JSON.stringify(arr)); renderA3();
+  }));
 }
-a3Grid.innerHTML = a3;
+renderA3();
+
+// Admin: add A3 sticker sheets (stored in this browser; download+commit for public)
+if (ADMIN) {
+  const head = a3Grid.previousElementSibling; // the .cat-section-sub
+  const up = document.createElement('label');
+  up.className = 'btn btn-outline';
+  up.style.cssText = 'display:inline-flex;margin-bottom:16px;cursor:pointer';
+  up.innerHTML = '＋ A3 sticker нэмэх (admin)<input type="file" accept="image/*" multiple style="display:none">';
+  head.insertAdjacentElement('afterend', up);
+  up.querySelector('input').addEventListener('change', async (e) => {
+    const files = [...(e.target.files || [])];
+    for (const f of files) {
+      const dataUrl = await new Promise(res => {
+        const im = new Image();
+        im.onload = () => { let w = im.naturalWidth, h = im.naturalHeight; const s = Math.min(1, 700 / Math.max(w, h));
+          w = Math.round(w * s); h = Math.round(h * s); const c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(im, 0, 0, w, h); res(c.toDataURL('image/webp', 0.8)); };
+        im.src = URL.createObjectURL(f);
+      });
+      const arr = loadCustomA3(); arr.push(dataUrl);
+      try { localStorage.setItem('ji_custom_a3', JSON.stringify(arr)); }
+      catch (_) { alert('Багтаамж дүүрсэн — зарим custom sticker устгана уу.'); break; }
+    }
+    renderA3(); e.target.value = '';
+  });
+}
 
 // 3 · Custom designer — coming soon placeholders
 const soonGrid = document.getElementById('soonGrid');

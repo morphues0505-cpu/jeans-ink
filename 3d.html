@@ -567,6 +567,69 @@
     patchesEl.appendChild(b);
   }
 
+  // ---- Custom stickers (admin upload, persisted in this browser) ----
+  const ADMIN = localStorage.getItem('ji_admin') === '1';
+
+  function addPatchButton(src, atFront) {
+    const b = document.createElement('button');
+    b.className = 'v3d-patch'; b.dataset.src = src;
+    b.style.backgroundImage = `url(${src})`;
+    if (atFront && patchesEl.firstChild) patchesEl.insertBefore(b, patchesEl.firstChild);
+    else patchesEl.appendChild(b);
+    return b;
+  }
+  function loadCustomStickers() {
+    try { return JSON.parse(localStorage.getItem('ji_custom_songoh') || '[]'); } catch (_) { return []; }
+  }
+  // re-show previously uploaded custom stickers
+  loadCustomStickers().forEach(src => addPatchButton(src, true));
+
+  // shrink a blob to a small webp dataURL (keeps localStorage small)
+  function toWebpDataURL(blob, max) {
+    return new Promise(resolve => {
+      const im = new Image();
+      im.onload = () => {
+        let w = im.naturalWidth, h = im.naturalHeight;
+        const s = Math.min(1, max / Math.max(w, h));
+        w = Math.round(w * s); h = Math.round(h * s);
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(im, 0, 0, w, h);
+        resolve(c.toDataURL('image/webp', 0.82));
+      };
+      im.src = URL.createObjectURL(blob);
+    });
+  }
+
+  if (ADMIN) {
+    const up = document.createElement('label');
+    up.className = 'v3d-patch';
+    up.title = 'Наалт upload (admin)';
+    up.style.cssText = 'display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--accent);border-style:dashed;background:#fff';
+    up.innerHTML = '＋<input type="file" accept="image/*" style="display:none">';
+    patchesEl.insertBefore(up, patchesEl.firstChild);
+    up.querySelector('input').addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0]; if (!file) return;
+      stickHint.style.color = 'var(--accent)'; stickHint.textContent = 'AI дэвсгэр арилгаж байна…';
+      try {
+        const { removeBackground } = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm');
+        const blob = await removeBackground(file, {
+          model: 'isnet', output: { format: 'image/png' },
+          progress: (k, c, t) => { const p = t ? Math.round(c / t * 100) : 0;
+            stickHint.textContent = (k && k.indexOf('fetch') === 0) ? `AI model татаж байна… ${p}%` : 'Боловсруулж байна…'; }
+        });
+        const dataUrl = await toWebpDataURL(blob, 640);
+        const arr = loadCustomStickers(); arr.push(dataUrl);
+        try { localStorage.setItem('ji_custom_songoh', JSON.stringify(arr)); }
+        catch (_) { alert('Browser-ийн багтаамж дүүрсэн байна. Хуучин custom наалтыг цэвэрлэнэ үү.'); }
+        const btn = addPatchButton(dataUrl, true);
+        [...patchesEl.querySelectorAll('.v3d-patch.armed')].forEach(x => x.classList.remove('armed'));
+        btn.classList.add('armed'); armedPatch = dataUrl; armedUI(true);
+        stickHint.textContent = '✓ Наалт нэмэгдлээ — жинс дээр товшиж наа';
+      } catch (err) { console.error(err); stickHint.textContent = '⚠ Дэвсгэр арилгаж чадсангүй'; stickHint.style.color = ''; }
+      e.target.value = '';
+    });
+  }
+
   // Stickers chosen on the Catalog page → pre-arm the first one here
   (function fromCatalog() {
     let sel = [];

@@ -115,7 +115,9 @@ const gate = document.getElementById('gate');
 if (sessionStorage.getItem('ji_admin') === '1') gate.classList.add('hide');
 function tryLogin() {
   if (document.getElementById('gatePass').value === ADMIN_PASS) {
-    sessionStorage.setItem('ji_admin', '1'); gate.classList.add('hide');
+    sessionStorage.setItem('ji_admin', '1');
+    localStorage.setItem('ji_admin', '1');   // unlock admin upload tools on Try On + Catalog
+    gate.classList.add('hide');
   } else {
     document.getElementById('gateErr').textContent = 'Буруу нууц үг';
   }
