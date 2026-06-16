@@ -473,3 +473,22 @@ body.theme-light .btn-outline:hover { background: var(--accent-dim); border-colo
 @media (max-width: 768px) {
   .imgband { background-attachment: scroll; min-height: 56vh; }
 }
+
+/* ============================================
+   MOBILE PERFORMANCE — drop GPU-heavy effects on phones
+   (blur / backdrop-filter / continuous hero animations cause jank)
+   ============================================ */
+@media (max-width: 768px) {
+  .nav { backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    background: var(--bg) !important; }
+  .select-bar { backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    background: rgba(13,13,13,0.97) !important; }
+  /* hero: kill animated blur ken-burns, glitch, scan, glow, spin */
+  .hero-bg-img::before { filter: none !important; animation: none !important; }
+  .hero-bg-img .hero-glow { animation: none !important; }
+  .hero-glitch { animation: none !important; text-shadow: none !important; }
+  .hero-glitch::before, .hero-glitch::after { animation: none !important; content: none !important; }
+  .hg-scan { animation: none !important; display: none !important; }
+  .hero-star { animation: none !important; }
+  .featured-strip-inner { animation-duration: 32s; }
+}
