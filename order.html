@@ -303,9 +303,9 @@
               <span style="font-size:.85rem">Нийт</span>
               <b id="calcTotal" class="gold" style="font-size:1.3rem">49,000₮</b>
             </div>
-            <a href="#" data-social="facebook" id="calcOrder" class="btn btn-primary" style="width:100%;margin-top:16px;justify-content:center">
+            <button type="button" id="calcOrder" class="btn btn-primary" style="width:100%;margin-top:16px;justify-content:center">
               Энэ үнээр захиалах →
-            </a>
+            </button>
             <p style="font-size:.68rem;color:var(--text-dim);margin-top:10px;text-align:center">2+ A4 авбал тус бүр 8,000₮ хямдарна · Урьдчилгаа 20,000₮</p>
           </div>
         </div>
@@ -402,9 +402,25 @@
   </div>
 </footer>
 
+<!-- ORDER RESULT MODAL -->
+<div id="ordModal" style="position:fixed;inset:0;z-index:4000;background:rgba(8,8,10,.9);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:24px">
+  <div style="position:relative;background:var(--bg-2);border:1px solid var(--border-2);border-radius:16px;padding:40px 32px;max-width:400px;width:100%;text-align:center">
+    <button id="ordClose" style="position:absolute;top:14px;right:16px;width:34px;height:34px;border-radius:50%;border:1px solid var(--border-2);background:transparent;color:var(--text);font-size:16px;cursor:pointer">✕</button>
+    <div style="width:60px;height:60px;border-radius:50%;background:var(--accent);color:#0D0D0D;font-size:30px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px">✓</div>
+    <h3 style="margin-bottom:6px">Захиалга бүртгэгдлээ</h3>
+    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">Таны захиалгын дугаар</p>
+    <div id="ordCode" style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:2.2rem;letter-spacing:.08em;color:var(--accent);margin-bottom:8px">#####</div>
+    <p id="ordSum" style="font-size:.8rem;color:var(--text-muted);margin-bottom:18px"></p>
+    <p style="font-size:.82rem;color:var(--text-muted);line-height:1.6;margin-bottom:20px">Энэ дугаараа <b style="color:var(--text)">Messenger-ээр илгээж</b> jeans-ээ авчрах цагаа тохирно. (Урьдчилгаа 20,000₮)</p>
+    <a id="ordFb" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:10px">Messenger-ээр илгээх →</a>
+    <button id="ordCopy" class="btn btn-outline" style="width:100%;justify-content:center">Дугаар хуулах</button>
+  </div>
+</div>
+
+<script src="js/config.js?v=1"></script>
 <script src="js/main.js?v=5"></script>
 <script>
-  // ── Price calculator ──
+  // ── Price calculator + order create (Telegram + Sheet via Apps Script) ──
   (function () {
     const sizes = document.querySelectorAll('.calc-size');
     const qVal = document.getElementById('qVal');
@@ -412,15 +428,16 @@
     const bundleEl = document.getElementById('calcBundle');
     const discEl = document.getElementById('calcDisc');
     if (!sizes.length || !qVal) return;
-    let size = 'A4', price = 49000, qty = 1;
+    let size = 'A4', price = 49000, qty = 1, total = 49000;
     const fmt = n => n.toLocaleString() + '₮';
 
     function render() {
-      let total = price * qty, disc = 0;
-      if (size === 'A4' && qty >= 2) { disc = Math.floor(qty / 2) * 8000; total -= disc; }  // 2× A4 bundle
+      let t = price * qty, disc = 0;
+      if (size === 'A4' && qty >= 2) { disc = Math.floor(qty / 2) * 8000; t -= disc; }  // 2× A4 bundle
+      total = t;
       bundleEl.style.display = disc > 0 ? 'flex' : 'none';
       if (disc > 0) discEl.textContent = '−' + fmt(disc);
-      totalEl.textContent = fmt(total);
+      totalEl.textContent = fmt(t);
     }
     sizes.forEach(b => b.addEventListener('click', () => {
       sizes.forEach(x => { x.classList.remove('active'); x.style.borderColor = 'var(--border-2)'; x.style.background = 'var(--bg)'; });
@@ -430,6 +447,49 @@
     document.getElementById('qMinus').addEventListener('click', () => { qty = Math.max(1, qty - 1); qVal.textContent = qty; render(); });
     document.getElementById('qPlus').addEventListener('click', () => { qty = Math.min(20, qty + 1); qVal.textContent = qty; render(); });
     render();
+
+    // ── order create ──
+    const cfg = window.JI_CONFIG || {};
+    const API = cfg.JI_API || '';
+    const FB  = cfg.FB_URL || '#';
+    const btn = document.getElementById('calcOrder');
+    const modal = document.getElementById('ordModal');
+    const codeEl = document.getElementById('ordCode');
+    const sumEl = document.getElementById('ordSum');
+    let lastCode = '';
+
+    function openModal(code) {
+      lastCode = code;
+      codeEl.textContent = '#' + code;
+      sumEl.textContent = `${size} × ${qty}ш · ${fmt(total)}`;
+      document.getElementById('ordFb').href = FB;
+      modal.style.display = 'flex';
+    }
+    function closeModal() { modal.style.display = 'none'; }
+    document.getElementById('ordClose').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.getElementById('ordCopy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText('#' + lastCode); document.getElementById('ordCopy').textContent = '✓ Хуулсан'; }
+      catch (_) { alert('Дугаар: #' + lastCode); }
+    });
+
+    btn.addEventListener('click', async () => {
+      const old = btn.textContent; btn.textContent = 'Бүртгэж байна…'; btn.disabled = true;
+      let code = null;
+      if (API) {
+        try {
+          // text/plain → no CORS preflight; Apps Script reads postData.contents
+          const res = await fetch(API, { method: 'POST', body: JSON.stringify({
+            action: 'create', type: 'Вэб захиалга (тооцоологч)', color: '-',
+            size: `${size} × ${qty}ш`, price: total }) });
+          const data = await res.json();
+          if (data && data.ok && data.code) code = String(data.code);
+        } catch (err) { console.warn('order create failed, offline fallback', err); }
+      }
+      if (!code) code = String(Math.floor(10000 + Math.random() * 90000)); // offline fallback
+      btn.textContent = old; btn.disabled = false;
+      openModal(code);
+    });
   })();
 </script>
 </body>
