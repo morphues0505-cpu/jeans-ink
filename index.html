@@ -145,6 +145,12 @@
     }
     @keyframes heroGlow { 0%,100%{ opacity:.55 } 50%{ opacity:1 } }
     .hero-bg-grid { z-index:0; }
+    /* Lightfall animated overlay — keeps the photo, streaks glow on top */
+    .hero-lightfall { position:absolute; inset:0; z-index:1; pointer-events:none;
+      mix-blend-mode:screen; }
+    .hero-lightfall canvas { width:100%; height:100%; display:block; }
+    .hero .container { position:relative; z-index:2; }   /* content above the overlay */
+    @media (max-width:768px) { .hero-lightfall { display:none; } }  /* perf: off on phones */
     /* Утсанд босоо crop ашиглах */
     @media (max-width:600px) {
       .hero-bg-img::before { background-image:url('assets/tete.webp?v=2'); filter: blur(2px) brightness(0.9) saturate(1.22); }
@@ -254,6 +260,7 @@
 <section class="hero">
   <div class="hero-bg-img"><div class="hero-glow"></div></div>
   <div class="hero-bg-grid"></div>
+  <div class="hero-lightfall" id="heroLightfall"></div>
   <div class="container">
     <div class="hero-content">
       <div class="hero-eyebrow">
@@ -531,5 +538,6 @@
 </footer>
 
 <script src="js/main.js?v=5"></script>
+<script type="module" src="js/lightfall.js?v=1"></script>
 </body>
 </html>
