@@ -6,17 +6,6 @@
    ============================================ */
 import { Renderer, Program, Mesh, Triangle } from 'https://cdn.jsdelivr.net/npm/ogl@1.0.11/+esm';
 
-const mount = document.getElementById('heroLightfall');
-const small = window.matchMedia('(max-width: 768px)').matches;
-const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (!mount) console.warn('[lightfall] #heroLightfall not found');
-else if (small) console.info('[lightfall] disabled on small screen');
-else if (reduce) console.info('[lightfall] disabled (reduced motion)');
-else {
-  try { start(mount); console.info('[lightfall] started'); }
-  catch (e) { console.error('[lightfall] failed', e); }
-}
-
 function hexToRGB(hex) {
   const c = hex.replace('#', '').padEnd(6, '0');
   return [parseInt(c.slice(0, 2), 16) / 255, parseInt(c.slice(2, 4), 16) / 255, parseInt(c.slice(4, 6), 16) / 255];
@@ -177,4 +166,16 @@ function start(container) {
     try { renderer.render({ scene: mesh }); } catch (e) { /* ignore */ }
   };
   requestAnimationFrame(loop);
+}
+
+// ── boot (after all consts above are initialized) ──
+const mount = document.getElementById('heroLightfall');
+const small = window.matchMedia('(max-width: 768px)').matches;
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!mount) console.warn('[lightfall] #heroLightfall not found');
+else if (small) console.info('[lightfall] disabled on small screen');
+else if (reduce) console.info('[lightfall] disabled (reduced motion)');
+else {
+  try { start(mount); console.info('[lightfall] started'); }
+  catch (e) { console.error('[lightfall] failed', e); }
 }
