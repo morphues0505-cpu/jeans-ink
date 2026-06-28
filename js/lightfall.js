@@ -101,7 +101,9 @@ void mainImage(out vec4 o, vec2 C) {
     C.x += Y.x / 8.0;
   }
   vec3 colr = sqrt(tanhv(max(O.rgb * uGlow - vec3(0.04, 0.08, 0.02), 0.0)));
-  o = vec4(colr, uOpacity);
+  // luminance-based alpha: dark areas transparent, bright streaks visible over the photo
+  float a = clamp(max(colr.r, max(colr.g, colr.b)) * 1.7, 0.0, 1.0) * uOpacity;
+  o = vec4(colr, a);
 }
 void main() { vec4 color; mainImage(color, vUv * iResolution.xy); gl_FragColor = color; }
 `;
@@ -112,7 +114,7 @@ function start(container) {
     colors: ['#C5F230', '#63B3ED', '#FF2E63'],
     backgroundColor: '#0D0D0D',
     speed: 0.7, streakCount: 9, streakWidth: 1.1, streakLength: 1,
-    glow: 1.15, density: 0.85, twinkle: 1, zoom: 2.6, backgroundGlow: 0.6, opacity: 0.9,
+    glow: 1.2, density: 0.85, twinkle: 1, zoom: 2.6, backgroundGlow: 0.5, opacity: 1,
     mouseInteraction: true, mouseStrength: 0.7, mouseRadius: 0.9, mouseDampening: 0.15
   };
 
