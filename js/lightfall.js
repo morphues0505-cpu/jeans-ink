@@ -4,12 +4,18 @@
    Mounts on #heroLightfall, blends over the existing hero background.
    Disabled on phones / reduced-motion for performance.
    ============================================ */
-import { Renderer, Program, Mesh, Triangle } from 'https://esm.sh/ogl@1.0.11';
+import { Renderer, Program, Mesh, Triangle } from 'https://cdn.jsdelivr.net/npm/ogl@1.0.11/+esm';
 
 const mount = document.getElementById('heroLightfall');
 const small = window.matchMedia('(max-width: 768px)').matches;
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (mount && !small && !reduce) start(mount);
+if (!mount) console.warn('[lightfall] #heroLightfall not found');
+else if (small) console.info('[lightfall] disabled on small screen');
+else if (reduce) console.info('[lightfall] disabled (reduced motion)');
+else {
+  try { start(mount); console.info('[lightfall] started'); }
+  catch (e) { console.error('[lightfall] failed', e); }
+}
 
 function hexToRGB(hex) {
   const c = hex.replace('#', '').padEnd(6, '0');
@@ -105,9 +111,9 @@ function start(container) {
   const opts = {
     colors: ['#C5F230', '#63B3ED', '#FF2E63'],
     backgroundColor: '#0D0D0D',
-    speed: 0.6, streakCount: 6, streakWidth: 1, streakLength: 1,
-    glow: 1, density: 0.7, twinkle: 1, zoom: 2.6, backgroundGlow: 0.5, opacity: 0.7,
-    mouseInteraction: true, mouseStrength: 0.6, mouseRadius: 0.9, mouseDampening: 0.15
+    speed: 0.7, streakCount: 9, streakWidth: 1.1, streakLength: 1,
+    glow: 1.15, density: 0.85, twinkle: 1, zoom: 2.6, backgroundGlow: 0.6, opacity: 0.9,
+    mouseInteraction: true, mouseStrength: 0.7, mouseRadius: 0.9, mouseDampening: 0.15
   };
 
   const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio || 1, 1.25), alpha: true, antialias: true });
